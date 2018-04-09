@@ -7,7 +7,6 @@ import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Random;
-import java.util.Set;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -106,16 +105,13 @@ public class PanelGame extends JPanel {
 			
 			
 			InputProgram facts= new ASPInputProgram();
-			for(int i=0;i<cell.length;i++)				
-				for(int j=0;j<cell.length;j++)					
-					try {
-						facts.addObjectInput(new Cell(i, j, cell[i][j]));
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-			
 			try {
-				facts.addObjectInput(new Edge());
+				for(int i=0;i<cell.length;i++)				
+					for(int j=0;j<cell.length;j++)		
+						facts.addObjectInput(new Cell(i, j, cell[i][j]));
+			
+				facts.addObjectInput(new Reachable());
+				facts.addObjectInput(new isReachable());
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
@@ -126,8 +122,15 @@ public class PanelGame extends JPanel {
 			for(AnswerSet s : sets.getAnswersets()) {
 				try {					
 					for(Object obj : s.getAtoms()) {
-						if(obj instanceof Edge) {
-							System.out.println(((Edge)obj).toString());
+//						if(obj instanceof Reachable) {
+//							Reachable r = (Reachable) obj;
+//							if(r.getX() == 0 && r.getY()==0 && r.getX1() == 8 && r.getY1() == 8)
+//								System.out.println("YES");
+//						}
+						if(obj instanceof isReachable) {
+							isReachable r = (isReachable) obj;
+							if(r.getV()!=0)
+								System.out.println("YES");
 						}
 					}
 				} catch (Exception e) {
@@ -166,6 +169,7 @@ public class PanelGame extends JPanel {
 		}
 	}
 	
+	@SuppressWarnings("unused")
 	private void PrintMatrix() {
 		for (int j = 0; j < cell[0].length; j++) {
 			for (int i = 0; i < cell.length; i++)

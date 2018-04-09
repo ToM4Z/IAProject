@@ -1,1 +1,8 @@
-edge(1,1,1,1).
+
+
+reachable(X1,Y1,X2,Y2) :- cell(X1,Y1,V1), cell(X2,Y2,V2), X2>X1, X2=X1+1, V1=0, V2=0. 
+reachable(X1,Y1,X2,Y2) :- cell(X1,Y1,V1), cell(X2,Y2,V2), Y2>Y1, Y2=Y1+1, V1=0, V2=0. 
+reachable(X1,Y1,X2,Y2) :- reachable(X1,Y1,X3,Y3), reachable(X3,Y3,X2,Y2).
+reachable(X1,Y1,X2,Y2) :- reachable(X2,Y2,X1,Y1).
+
+isReachable(1) :- reachable(0,0,8,8).
