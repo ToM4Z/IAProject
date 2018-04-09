@@ -5,43 +5,51 @@ import it.unical.mat.embasp.languages.Param;
 @Id("cell")
 public class Cell {
 
+
 	@Param(0)
-	private int x;
+	private int row;
 	@Param(1)
-	private int y;
+	private int column;
 	@Param(2)
-	private int v;
+	private int value;
 	
-	public Cell(int x,int y,int v){
-		this.x=x;
-		this.y=y;
-		this.v=v;
+	public Cell(final int r,final int c,final int v){
+		this.row=r;
+		this.column=c;
+		this.value=v;
 	}
 	
 	public Cell() {
+		row = column = value = 0;
 	}
 
-	public int getX() {
-		return x;
+	public int getRow() {
+		return row;
 	}
 
-	public void setX(int x) {
-		this.x = x;
+	public void setRow(final int row) {
+		this.row = row;
 	}
 
-	public int getY() {
-		return y;
+	public int getColumn() {
+		return column;
 	}
 
-	public void setY(int y) {
-		this.y = y;
+	public void setColumn(final int column) {
+		this.column = column;
 	}
 
-	public int getV() {
-		return v;
+	public int getValue() {
+		return value;
 	}
 
-	public void setV(int v) {
-		this.v = v;
+	public void setValue(final int value) {
+		this.value = value;
 	}
+	
+	@Override
+	public String toString() {
+		return "Cell("+row+","+column+","+value+")";
+	}
+
 }

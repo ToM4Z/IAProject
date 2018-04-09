@@ -1,8 +1,1 @@
-
-
 edge(1,1,1,1).
-capra.
-%edge(X,Y,X1,Y1) :- cell(X,Y,_), cell(X1,Y1,_), X1=X+1.
-%edge(X,Y,X1,Y1) :- cell(X,Y,_), cell(X1,Y1,_), Y1=Y+1.
-
-%edge(X,Y,X2,Y2) :- edge(X,Y,X1,Y1), edge(X1,Y1,X2,Y2), X!=X.

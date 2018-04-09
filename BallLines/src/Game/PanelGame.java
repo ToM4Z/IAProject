@@ -91,15 +91,17 @@ public class PanelGame extends JPanel {
 		
 		fase = false;
 		handler = new DesktopHandler(new DLVDesktopService("lib/dlv.mingw.exe"));
+		InputProgram encoding= new ASPInputProgram();
+		encoding.addFilesPath("encodings/path");
+		handler.addProgram(encoding);
 	}
 	
 	private void next() {
 		fase = !fase;
 		
-		if(fase) {
+		if(fase) {System.out.println("Fase1");
 			// FASE 1
-			// calcolo dove spostare una pallina e il path
-	
+			// calcolo dove spostare una pallina e il path	
 			// viene disegnato il path su schermo
 			
 			
@@ -107,25 +109,26 @@ public class PanelGame extends JPanel {
 			for(int i=0;i<cell.length;i++)				
 				for(int j=0;j<cell.length;j++)					
 					try {
-						System.out.println("added "+i+" "+j);
 						facts.addObjectInput(new Cell(i, j, cell[i][j]));
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
+			
+			try {
+				facts.addObjectInput(new Edge());
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+			
 			handler.addProgram(facts);
-			InputProgram encoding= new ASPInputProgram();
-			encoding.addFilesPath("encodings/path");
-			handler.addProgram(encoding);
+			
 			AnswerSets sets = (AnswerSets) handler.startSync();
 			for(AnswerSet s : sets.getAnswersets()) {
-				try {
-					System.out.println(s.toString());
-					Set<Object> o = s.getAtoms();
-					System.out.println(o.size());
-					for(Object obj:s.getAtoms()){
-						if(! (obj instanceof Edge))continue;
-						Edge edge = (Edge) obj;
-						System.out.println(edge.getX()+","+edge.getY()+","+edge.getX1()+","+edge.getY1());
+				try {					
+					for(Object obj : s.getAtoms()) {
+						if(obj instanceof Edge) {
+							System.out.println(((Edge)obj).toString());
+						}
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -133,7 +136,7 @@ public class PanelGame extends JPanel {
 			}
 			
 			
-		}else {
+		}else {System.out.println("Fase2");
 									// FASE 2
 							
 									// la pallina viene spostata
@@ -158,7 +161,7 @@ public class PanelGame extends JPanel {
 				y = random.nextInt(9);
 			}
 			
-			cell[x][y] = -c;
+			cell[x][y] = c+10;
 			jcell[x][y].setIcon(factory.getStar(Color.getColor(c)));
 		}
 	}
