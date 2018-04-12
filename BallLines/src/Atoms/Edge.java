@@ -1,9 +1,9 @@
-package Game;
+package Atoms;
 import it.unical.mat.embasp.languages.Id;
 import it.unical.mat.embasp.languages.Param;
 
-@Id("reachable")
-public class Reachable {
+@Id("edge")
+public class Edge {
 
 	
 	@Param(0)
@@ -15,14 +15,14 @@ public class Reachable {
 	@Param(3)
 	private int y1;
 	
-	public Reachable(final int xx,final int yy,final int xx1,final int yy1){
+	public Edge(final int xx,final int yy,final int xx1,final int yy1){
 		this.x=xx;
 		this.y=yy;
 		this.x1=xx1;
 		this.y1=yy1;
 	}
 	
-	public Reachable() {
+	public Edge() {
 		x=y=x1=y1=0;
 	}
 
@@ -60,6 +60,6 @@ public class Reachable {
 
 	@Override
 	public String toString() {
-		return "Reachable("+x+","+y+","+x1+","+y1+")";
+		return "Edge("+x+","+y+","+x1+","+y1+")";
 	}	
 }

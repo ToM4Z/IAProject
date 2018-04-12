@@ -12,6 +12,8 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import Atoms.Reachable;
+import Atoms.isReachable;
 import it.unical.mat.embasp.base.Handler;
 import it.unical.mat.embasp.base.InputProgram;
 import it.unical.mat.embasp.languages.asp.ASPInputProgram;
@@ -19,6 +21,8 @@ import it.unical.mat.embasp.languages.asp.AnswerSet;
 import it.unical.mat.embasp.languages.asp.AnswerSets;
 import it.unical.mat.embasp.platforms.desktop.DesktopHandler;
 import it.unical.mat.embasp.specializations.dlv.desktop.DLVDesktopService;
+import it.unical.mat.embasp.specializations.dlv2.DLV2AnswerSets;
+import it.unical.mat.embasp.specializations.dlv2.desktop.DLV2DesktopService;
 
 public class PanelGame extends JPanel {
 	private static final long serialVersionUID = 1L;
@@ -89,7 +93,7 @@ public class PanelGame extends JPanel {
 //		PrintMatrix();
 		
 		fase = false;
-		handler = new DesktopHandler(new DLVDesktopService("lib/dlv.mingw.exe"));
+		handler = new DesktopHandler(new DLV2DesktopService("lib/dlv2"));
 		InputProgram encoding= new ASPInputProgram();
 		encoding.addFilesPath("encodings/path");
 		handler.addProgram(encoding);
@@ -106,11 +110,10 @@ public class PanelGame extends JPanel {
 			
 			InputProgram facts= new ASPInputProgram();
 			try {
-				for(int i=0;i<cell.length;i++)				
+				/*for(int i=0;i<cell.length;i++)				
 					for(int j=0;j<cell.length;j++)		
 						facts.addObjectInput(new Cell(i, j, cell[i][j]));
-			
-				facts.addObjectInput(new Reachable());
+			*/
 				facts.addObjectInput(new isReachable());
 			} catch (Exception e1) {
 				e1.printStackTrace();
@@ -119,19 +122,20 @@ public class PanelGame extends JPanel {
 			handler.addProgram(facts);
 			
 			AnswerSets sets = (AnswerSets) handler.startSync();
+			System.out.println(sets.getAnswerSetsString());
+			System.out.println(sets.getAnswersets().size());
+			System.out.println(sets.getErrors());
 			for(AnswerSet s : sets.getAnswersets()) {
 				try {					
-					for(Object obj : s.getAtoms()) {
-//						if(obj instanceof Reachable) {
-//							Reachable r = (Reachable) obj;
-//							if(r.getX() == 0 && r.getY()==0 && r.getX1() == 8 && r.getY1() == 8)
+//					for(Object obj : s.getAtoms()) {
+//						if(obj instanceof isReachable) {
+//							isReachable r = (isReachable) obj;
+//							if(r.getV()!=0)
 //								System.out.println("YES");
 //						}
-						if(obj instanceof isReachable) {
-							isReachable r = (isReachable) obj;
-							if(r.getV()!=0)
-								System.out.println("YES");
-						}
+//					}
+					for(String a : s.getAnswerSet()) {
+						System.out.println(a);
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
