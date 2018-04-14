@@ -77,7 +77,7 @@ public class PanelGame extends JPanel {
 		//		INIT
 		
 		random = new Random();
-		for (int init = 0, x, y, c; init < 5; init++) {		// piazzo le prime 5 palline
+		/*for (int init = 0, x, y, c; init < 5; init++) {		// piazzo le prime 5 palline
 			x = random.nextInt(9);
 			y = random.nextInt(9);
 			c = random.nextInt(6)+1;
@@ -89,9 +89,9 @@ public class PanelGame extends JPanel {
 			
 			cell[x][y] = c;
 			jcell[x][y].setIcon(factory.getBall(Color.getColor(c)));
-		}
+		}*/
 		
-		chooseWhereSpawnBalls();	// scelgo dove spawneranno le prossime 3 palline
+//		chooseWhereSpawnBalls();	// scelgo dove spawneranno le prossime 3 palline
 //		PrintMatrix();
 		
 		fase = false;
@@ -114,12 +114,14 @@ public class PanelGame extends JPanel {
 			InputProgram facts= new ASPInputProgram();
 			try {
 				for(int i=0;i<cell.length;i++)				
-					for(int j=0;j<cell.length;j++)	
-						facts.addObjectInput(new Cell(i, j, cell[i][j]));
-			
+					for(int j=0;j<cell.length;j++) {
+						Cell x = new Cell(j, i, cell[i][j]);
+						System.out.println(x.toString());
+						facts.addObjectInput(x);
+					}
 				facts.addObjectInput(new isReachable());
-				facts.addObjectInput(new EdgeOriz());
-				facts.addObjectInput(new EdgeVer());
+				facts.addObjectInput(new EdgeOriz(20,20,20,20));
+				facts.addObjectInput(new EdgeVer(20,20,20,20));
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
@@ -128,7 +130,7 @@ public class PanelGame extends JPanel {
 						
 			AnswerSets sets = (AnswerSets) handler.startSync();
 			
-//			handler.removeProgram(facts);
+			handler.removeProgram(facts);
 			
 			int size = sets.getAnswersets().size();
 			if(size == 0) {
@@ -136,40 +138,68 @@ public class PanelGame extends JPanel {
 				System.out.println(sets.getErrors());
 				return;
 			}
-			
-			for(AnswerSet s : sets.getAnswersets()) {
+			System.out.println("NUM AS: "+sets.getAnswersets().size());
+			AnswerSet s = sets.getAnswersets().get(sets.getAnswersets().size()-1);
 			List<EdgeOriz> oriz = new LinkedList<>();
 			List<EdgeVer> ver = new LinkedList<>();
 			boolean placed = false;
-				try {	
-					
-					for(Object obj : s.getAtoms()) {
-						if(obj instanceof isReachable) {
-							isReachable r = (isReachable) obj;
-							if(r.getV()!=0)
-								placed = true;
-						}else if(obj instanceof EdgeOriz) {
-							EdgeOriz o = (EdgeOriz) obj;
-							oriz.add(o);
-						}else if(obj instanceof EdgeVer) {
-							EdgeVer o = (EdgeVer) obj;
-							ver.add(o);
-						}
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-				} 
+			try {	
 				
+				for(Object obj : s.getAtoms()) {
+					if(obj instanceof isReachable) {
+						isReachable r = (isReachable) obj;
+						if(r.getV()!=0)
+							placed = true;
+					}else if(obj instanceof EdgeOriz) {
+						EdgeOriz o = (EdgeOriz) obj;
+						if(o.getX()==o.getX1() && o.getY() == o.getY1())
+							continue;
+						oriz.add(o);
+					}else if(obj instanceof EdgeVer) {
+						EdgeVer o = (EdgeVer) obj;
+						if(o.getX()==o.getX1() && o.getY() == o.getY1())
+							continue;
+						ver.add(o);
+					}
+				}
+				
+
 				System.out.println("Sizes: "+oriz.size()+" "+ver.size());
 				
+				char[][] m = new char[9][9];
+				
+				for (int i = 0; i < m.length; i++)
+					for (int j = 0; j < m.length; j++) 
+						m[i][j] = ' ';
+				
 				System.out.println("Oriz\n");
-				for(EdgeOriz o : oriz)
+				for(EdgeOriz o : oriz) {
 					System.out.println(o.toString());
+					m[o.getY()][o.getX()]='-';
+					if(m[o.getY1()][o.getX1()]==' ')
+						m[o.getY1()][o.getX1()]=';';
+				}
+				PrintMatrix(m);
 
-				System.out.println("\n\nver\n");
-				for(EdgeVer o : ver)
+				System.out.println("\n\nVer\n");
+				for(EdgeVer o : ver) {
 					System.out.println(o.toString());
-			}
+					if(m[o.getY()][o.getX()]=='-')
+						m[o.getY()][o.getX()]='+';
+					else
+						m[o.getY()][o.getX()]='|';
+					
+					if(m[o.getY1()][o.getX1()]==' ')
+						m[o.getY1()][o.getX1()]='!';
+					else if(m[o.getY1()][o.getX1()]=='-')
+						m[o.getY1()][o.getX1()]='L';
+				}
+				PrintMatrix(m);
+				
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+			} 
 			
 		}else {System.out.println("Fase2");
 									// FASE 2
@@ -202,10 +232,10 @@ public class PanelGame extends JPanel {
 	}
 	
 	@SuppressWarnings("unused")
-	private void PrintMatrix() {
-		for (int j = 0; j < cell[0].length; j++) {
-			for (int i = 0; i < cell.length; i++)
-				System.out.print(cell[i][j]);
+	private void PrintMatrix(char[][] c) {
+		for (int j = 0; j < c[0].length; j++) {
+			for (int i = 0; i < c.length; i++)
+				System.out.print(c[i][j]+" ");
 			System.out.println();
 		}
 	}
