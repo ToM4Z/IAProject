@@ -20,6 +20,7 @@ import Atoms.EdgeVer;
 import Atoms.isReachable;
 import it.unical.mat.embasp.base.Handler;
 import it.unical.mat.embasp.base.InputProgram;
+import it.unical.mat.embasp.base.OptionDescriptor;
 import it.unical.mat.embasp.languages.asp.ASPInputProgram;
 import it.unical.mat.embasp.languages.asp.AnswerSet;
 import it.unical.mat.embasp.languages.asp.AnswerSets;
@@ -124,6 +125,8 @@ public class PanelGame extends JPanel {
 			}
 			
 			handler.addProgram(facts);
+			
+			handler.addOption(new OptionDescriptor(""));
 			
 			AnswerSets sets = (AnswerSets) handler.startSync();
 			
