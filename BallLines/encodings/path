@@ -1,8 +1,8 @@
 
 
-edgeOriz(X1,Y1,X1,Y2) | noEdgeOriz(X1,Y1,X1,Y2) :- cell(X1,Y1,V), cell(X1,Y2,V), Y2>Y1, Y2=Y1+1, V=0. 
+edgeOriz(X1,Y1,X1,Y2) | noEdgeOriz(X1,Y1,X1,Y2) :- cell(X1,Y1,V), cell(X1,Y2,V), Y2=Y1+1, V=0. 
 
-edgeVer(X1,Y1,X2,Y1) | noEdgeVer(X1,Y1,X2,Y1) :- cell(X1,Y1,V), cell(X2,Y1,V), X2>X1, X2=X1+1, V=0.
+edgeVer(X1,Y1,X2,Y1) | noEdgeVer(X1,Y1,X2,Y1) :- cell(X1,Y1,V), cell(X2,Y1,V), X2=X1+1, V=0.
 
 reachable(X1,Y1,X2,Y2) :- edgeOriz(X1,Y1,X3,Y3), edgeOriz(X3,Y3,X2,Y2).
 reachable(X1,Y1,X2,Y2) :- edgeVer(X1,Y1,X3,Y3), edgeVer(X3,Y3,X2,Y2).

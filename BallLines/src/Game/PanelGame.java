@@ -20,7 +20,6 @@ import Atoms.EdgeVer;
 import Atoms.isReachable;
 import it.unical.mat.embasp.base.Handler;
 import it.unical.mat.embasp.base.InputProgram;
-import it.unical.mat.embasp.base.OptionDescriptor;
 import it.unical.mat.embasp.languages.asp.ASPInputProgram;
 import it.unical.mat.embasp.languages.asp.AnswerSet;
 import it.unical.mat.embasp.languages.asp.AnswerSets;
@@ -102,6 +101,7 @@ public class PanelGame extends JPanel {
 		handler.addProgram(encoding);
 	}
 	
+	@SuppressWarnings("unused")
 	private void next() {
 		fase = !fase;
 		
@@ -128,7 +128,7 @@ public class PanelGame extends JPanel {
 						
 			AnswerSets sets = (AnswerSets) handler.startSync();
 			
-			handler.removeProgram(facts);
+//			handler.removeProgram(facts);
 			
 			int size = sets.getAnswersets().size();
 			if(size == 0) {
@@ -136,7 +136,8 @@ public class PanelGame extends JPanel {
 				System.out.println(sets.getErrors());
 				return;
 			}
-			AnswerSet s = sets.getAnswersets().get(0);
+			
+			for(AnswerSet s : sets.getAnswersets()) {
 			List<EdgeOriz> oriz = new LinkedList<>();
 			List<EdgeVer> ver = new LinkedList<>();
 			boolean placed = false;
@@ -159,8 +160,16 @@ public class PanelGame extends JPanel {
 					e.printStackTrace();
 				} 
 				
-				System.out.println(oriz.size()+" "+ver.size());
-			
+				System.out.println("Sizes: "+oriz.size()+" "+ver.size());
+				
+				System.out.println("Oriz\n");
+				for(EdgeOriz o : oriz)
+					System.out.println(o.toString());
+
+				System.out.println("\n\nver\n");
+				for(EdgeVer o : ver)
+					System.out.println(o.toString());
+			}
 			
 		}else {System.out.println("Fase2");
 									// FASE 2
