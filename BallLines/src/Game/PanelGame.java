@@ -98,7 +98,7 @@ public class PanelGame extends JPanel {
 		fase = false;
 		handler = new DesktopHandler(new DLV2DesktopService("lib/dlv2"));
 		InputProgram encoding= new ASPInputProgram();
-		encoding.addFilesPath(" encodings/path");
+		encoding.addFilesPath("encodings/path");
 		handler.addProgram(encoding);
 	}
 	
@@ -117,9 +117,9 @@ public class PanelGame extends JPanel {
 					for(int j=0;j<cell.length;j++)	
 						facts.addObjectInput(new Cell(i, j, cell[i][j]));
 			
-//				facts.addObjectInput(new isReachable());
-//				facts.addObjectInput(new EdgeOriz());
-//				facts.addObjectInput(new EdgeVer());
+				facts.addObjectInput(new isReachable());
+				facts.addObjectInput(new EdgeOriz());
+				facts.addObjectInput(new EdgeVer());
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
@@ -136,7 +136,7 @@ public class PanelGame extends JPanel {
 				System.out.println(sets.getErrors());
 				return;
 			}
-			AnswerSet s = sets.getAnswersets().get(sets.getAnswersets().size()-1);
+			AnswerSet s = sets.getAnswersets().get(0);
 			List<EdgeOriz> oriz = new LinkedList<>();
 			List<EdgeVer> ver = new LinkedList<>();
 			boolean placed = false;
