@@ -6,23 +6,25 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Random;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import Atoms.Reachable;
+import Atoms.Cell;
+import Atoms.EdgeOriz;
+import Atoms.EdgeVer;
 import Atoms.isReachable;
 import it.unical.mat.embasp.base.Handler;
 import it.unical.mat.embasp.base.InputProgram;
+import it.unical.mat.embasp.base.OptionDescriptor;
 import it.unical.mat.embasp.languages.asp.ASPInputProgram;
 import it.unical.mat.embasp.languages.asp.AnswerSet;
 import it.unical.mat.embasp.languages.asp.AnswerSets;
 import it.unical.mat.embasp.platforms.desktop.DesktopHandler;
-import it.unical.mat.embasp.specializations.dlv.desktop.DLVDesktopService;
-import it.unical.mat.embasp.specializations.dlv2.DLV2AnswerSets;
 import it.unical.mat.embasp.specializations.dlv2.desktop.DLV2DesktopService;
 
 public class PanelGame extends JPanel {
@@ -89,14 +91,14 @@ public class PanelGame extends JPanel {
 			cell[x][y] = c;
 			jcell[x][y].setIcon(factory.getBall(Color.getColor(c)));
 		}
-
+		
 		chooseWhereSpawnBalls();	// scelgo dove spawneranno le prossime 3 palline
 //		PrintMatrix();
 		
 		fase = false;
 		handler = new DesktopHandler(new DLV2DesktopService("lib/dlv2"));
 		InputProgram encoding= new ASPInputProgram();
-		encoding.addFilesPath("encodings/path");
+		encoding.addFilesPath(" encodings/path");
 		handler.addProgram(encoding);
 	}
 	
@@ -111,37 +113,53 @@ public class PanelGame extends JPanel {
 			
 			InputProgram facts= new ASPInputProgram();
 			try {
-				/*for(int i=0;i<cell.length;i++)				
-					for(int j=0;j<cell.length;j++)		
+				for(int i=0;i<cell.length;i++)				
+					for(int j=0;j<cell.length;j++)	
 						facts.addObjectInput(new Cell(i, j, cell[i][j]));
-			*/
-				facts.addObjectInput(new isReachable());
+			
+//				facts.addObjectInput(new isReachable());
+//				facts.addObjectInput(new EdgeOriz());
+//				facts.addObjectInput(new EdgeVer());
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
 			
 			handler.addProgram(facts);
-			
+						
 			AnswerSets sets = (AnswerSets) handler.startSync();
-			System.out.println(sets.getAnswerSetsString());
-			System.out.println(sets.getAnswersets().size());
-			System.out.println(sets.getErrors());
-			for(AnswerSet s : sets.getAnswersets()) {
-				try {					
-//					for(Object obj : s.getAtoms()) {
-//						if(obj instanceof isReachable) {
-//							isReachable r = (isReachable) obj;
-//							if(r.getV()!=0)
-//								System.out.println("YES");
-//						}
-//					}
-					for(String a : s.getAnswerSet()) {
-						System.out.println(a);
+			
+			handler.removeProgram(facts);
+			
+			int size = sets.getAnswersets().size();
+			if(size == 0) {
+				System.out.println("ZERO");
+				System.out.println(sets.getErrors());
+				return;
+			}
+			AnswerSet s = sets.getAnswersets().get(sets.getAnswersets().size()-1);
+			List<EdgeOriz> oriz = new LinkedList<>();
+			List<EdgeVer> ver = new LinkedList<>();
+			boolean placed = false;
+				try {	
+					
+					for(Object obj : s.getAtoms()) {
+						if(obj instanceof isReachable) {
+							isReachable r = (isReachable) obj;
+							if(r.getV()!=0)
+								placed = true;
+						}else if(obj instanceof EdgeOriz) {
+							EdgeOriz o = (EdgeOriz) obj;
+							oriz.add(o);
+						}else if(obj instanceof EdgeVer) {
+							EdgeVer o = (EdgeVer) obj;
+							ver.add(o);
+						}
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
 				} 
-			}
+				
+				System.out.println(oriz.size()+" "+ver.size());
 			
 			
 		}else {System.out.println("Fase2");
