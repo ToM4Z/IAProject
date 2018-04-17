@@ -49,7 +49,7 @@ public class Cell {
 	
 	@Override
 	public String toString() {
-		return "Cell("+row+","+column+","+value+")";
+		return "cell("+row+","+column+","+value+").";
 	}
 
 }

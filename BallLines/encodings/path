@@ -1,23 +1,28 @@
 
+edgeOriz(X1,Y1,X1,Y2) | noEdgeOriz(X1,Y1,X1,Y2) :- cell(X1,Y1,V), cell(X1,Y2,V), Y2-Y1=1, V=0. 
+edgeVer(X1,Y1,X2,Y1) | noEdgeVer(X1,Y1,X2,Y1) :- cell(X1,Y1,V), cell(X2,Y1,V), X2-X1=1, V=0.
 
-edgeOriz(X1,Y1,X1,Y2) | noEdgeOriz(X1,Y1,X1,Y2) :- cell(X1,Y1,V), cell(X1,Y2,V), Y2=Y1+1, V=0. 
-
-edgeVer(X1,Y1,X2,Y1) | noEdgeVer(X1,Y1,X2,Y1) :- cell(X1,Y1,V), cell(X2,Y1,V), X2=X1+1, V=0.
-
-reachable(X1,Y1,X2,Y2) :- edgeOriz(X1,Y1,X3,Y3), edgeOriz(X3,Y3,X2,Y2), Y1<>Y3, Y3<>Y2.
-reachable(X1,Y1,X2,Y2) :- edgeVer(X1,Y1,X3,Y3), edgeVer(X3,Y3,X2,Y2), X1<>X3, X3<>X2.
+reachable(X1,Y1,X2,Y2) :- edgeOriz(X1,Y1,X2,Y2).
+reachable(X1,Y1,X2,Y2) :- edgeVer(X1,Y1,X2,Y2).
 reachable(X1,Y1,X2,Y2) :- reachable(X1,Y1,X3,Y3), reachable(X3,Y3,X2,Y2).
 
 isReachable(1) :- reachable(XS,YS,XE,YE), start(XS,YS), end(XE,YE).
 isReachable(1) :- reachable(XE,YE,XS,YS), start(XS,YS), end(XE,YE).
 :- not isReachable(1).
 
-cont(1,X):- #count{X1,Y1,X2,Y2: edgeOriz(X1,Y1,X2,Y2)}=X.
-cont(2,X):- #count{X1,Y1,X2,Y2: edgeVer(X1,Y1,X2,Y2)}=X.
-
 :~ edgeOriz(X1,Y1,X2,Y2). [1@1]
 :~ edgeVer(X1,Y1,X2,Y2). [1@1]
 
+path(1,X,Y) :- edgeOriz(X1,Y1,X,Y), start(X1,Y1).
+path(1,X,Y) :- edgeVer(X1,Y1,X,Y), start(X1,Y1).
 
-start(0,0).
-end(8,8).
+path(1,X,Y) :- edgeOriz(X1,Y1,X,Y), end(X1,Y1), not path(1,XS,YS), start(XS,YS).
+path(1,X,Y) :- edgeVer(X1,Y1,X,Y), end(X1,Y1), not path(1,XS,YS), start(XS,YS).
+
+path(N,X,Y) :- path(B,XS,YS), edgeOriz(XS,YS,X,Y), N=B+1.
+path(N,X,Y) :- path(B,XS,YS), edgeVer(XS,YS,X,Y), N=B+1.
+
+:- path(N,X1,Y1), path(N,X2,Y2), X1<>X2, Y1<>Y2.
+
+start(5,5).
+end(1,0).

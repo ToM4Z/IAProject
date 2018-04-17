@@ -6,6 +6,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
@@ -15,8 +16,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import Atoms.Cell;
-import Atoms.EdgeOriz;
-import Atoms.EdgeVer;
+import Atoms.Path;
 import Atoms.isReachable;
 import it.unical.mat.embasp.base.Handler;
 import it.unical.mat.embasp.base.InputProgram;
@@ -77,7 +77,7 @@ public class PanelGame extends JPanel {
 		//		INIT
 		
 		random = new Random();
-		/*for (int init = 0, x, y, c; init < 5; init++) {		// piazzo le prime 5 palline
+		for (int init = 0, x, y, c; init < 5; init++) {		// piazzo le prime 5 palline
 			x = random.nextInt(9);
 			y = random.nextInt(9);
 			c = random.nextInt(6)+1;
@@ -89,7 +89,7 @@ public class PanelGame extends JPanel {
 			
 			cell[x][y] = c;
 			jcell[x][y].setIcon(factory.getBall(Color.getColor(c)));
-		}*/
+		}
 		
 //		chooseWhereSpawnBalls();	// scelgo dove spawneranno le prossime 3 palline
 //		PrintMatrix();
@@ -120,8 +120,7 @@ public class PanelGame extends JPanel {
 						facts.addObjectInput(x);
 					}
 				facts.addObjectInput(new isReachable());
-				facts.addObjectInput(new EdgeOriz(20,20,20,20));
-				facts.addObjectInput(new EdgeVer(20,20,20,20));
+				facts.addObjectInput(new Path());
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
@@ -130,18 +129,14 @@ public class PanelGame extends JPanel {
 						
 			AnswerSets sets = (AnswerSets) handler.startSync();
 			
-			handler.removeProgram(facts);
-			
 			int size = sets.getAnswersets().size();
 			if(size == 0) {
 				System.out.println("ZERO");
 				System.out.println(sets.getErrors());
 				return;
 			}
-			System.out.println("NUM AS: "+sets.getAnswersets().size());
 			AnswerSet s = sets.getAnswersets().get(sets.getAnswersets().size()-1);
-			List<EdgeOriz> oriz = new LinkedList<>();
-			List<EdgeVer> ver = new LinkedList<>();
+			List<Path> path = new LinkedList<>();
 			boolean placed = false;
 			try {	
 				
@@ -150,51 +145,79 @@ public class PanelGame extends JPanel {
 						isReachable r = (isReachable) obj;
 						if(r.getV()!=0)
 							placed = true;
-					}else if(obj instanceof EdgeOriz) {
-						EdgeOriz o = (EdgeOriz) obj;
-						if(o.getX()==o.getX1() && o.getY() == o.getY1())
-							continue;
-						oriz.add(o);
-					}else if(obj instanceof EdgeVer) {
-						EdgeVer o = (EdgeVer) obj;
-						if(o.getX()==o.getX1() && o.getY() == o.getY1())
-							continue;
-						ver.add(o);
+					}else if(obj instanceof Path) {
+						Path o = (Path) obj;
+						path.add(o);
 					}
 				}
-				
+				path.sort(new Comparator<Path>() {
 
-				System.out.println("Sizes: "+oriz.size()+" "+ver.size());
-				
-				char[][] m = new char[9][9];
-				
-				for (int i = 0; i < m.length; i++)
-					for (int j = 0; j < m.length; j++) 
-						m[i][j] = ' ';
-				
-				System.out.println("Oriz\n");
-				for(EdgeOriz o : oriz) {
-					System.out.println(o.toString());
-					m[o.getY()][o.getX()]='-';
-					if(m[o.getY1()][o.getX1()]==' ')
-						m[o.getY1()][o.getX1()]=';';
-				}
-				PrintMatrix(m);
-
-				System.out.println("\n\nVer\n");
-				for(EdgeVer o : ver) {
-					System.out.println(o.toString());
-					if(m[o.getY()][o.getX()]=='-')
-						m[o.getY()][o.getX()]='+';
-					else
-						m[o.getY()][o.getX()]='|';
+					@Override
+					public int compare(Path p0, Path p1) {
+						if(p0.getN()<p1.getN())
+							return -1;
+						return 1;
+					}
 					
-					if(m[o.getY1()][o.getX1()]==' ')
-						m[o.getY1()][o.getX1()]='!';
-					else if(m[o.getY1()][o.getX1()]=='-')
-						m[o.getY1()][o.getX1()]='L';
-				}
-				PrintMatrix(m);
+				});
+				
+				for(Path p : path)
+					System.out.println(p.toString());
+					
+				
+				for(int i=1; i<path.size()-1; ++i) {
+					Path prec = path.get(i-1);
+					Path now = path.get(i);
+					Path next = path.get(i+1);
+
+					
+					if(now.getX() != prec.getX()) {		
+						
+						if(now.getX() == prec.getX()+1) {
+							
+							if(now.getY() != next.getY()) {
+								if(now.getY() == next.getY()+1)
+									jcell[now.getY()][now.getX()].setIcon(factory.getCurveUL());
+								else
+									jcell[now.getY()][now.getX()].setIcon(factory.getCurveUR());
+							}else
+								jcell[now.getY()][now.getX()].setIcon(factory.getHigh());
+							
+						}else{
+							
+							if(now.getY() != next.getY()) {
+								if(now.getY() == next.getY()+1)
+									jcell[now.getY()][now.getX()].setIcon(factory.getCurveDL());
+								else
+									jcell[now.getY()][now.getX()].setIcon(factory.getCurveDR());
+							}else
+								jcell[now.getY()][now.getX()].setIcon(factory.getHigh());
+							
+						}
+					}else{
+						if(now.getY() == prec.getY()+1) {
+							
+							if(now.getX() != next.getX()) {
+								if(now.getX() == next.getX()+1)
+									jcell[now.getY()][now.getX()].setIcon(factory.getCurveUL());
+								else
+									jcell[now.getY()][now.getX()].setIcon(factory.getCurveDL());
+							}else
+								jcell[now.getY()][now.getX()].setIcon(factory.getLow());
+							
+						}else{
+							
+							if(now.getX() != next.getX()) {
+								if(now.getX() == next.getX()+1)
+									jcell[now.getY()][now.getX()].setIcon(factory.getCurveDR());
+								else
+									jcell[now.getY()][now.getX()].setIcon(factory.getCurveUR());
+							}else
+								jcell[now.getY()][now.getX()].setIcon(factory.getLow());
+							
+						}
+					}
+				}								
 				
 				
 			} catch (Exception e) {
