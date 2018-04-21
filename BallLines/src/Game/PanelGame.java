@@ -16,6 +16,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import Atoms.Cell;
+import Atoms.End;
 import Atoms.Path;
 import Atoms.isReachable;
 import it.unical.mat.embasp.base.Handler;
@@ -121,6 +122,7 @@ public class PanelGame extends JPanel {
 					}
 				facts.addObjectInput(new isReachable());
 				facts.addObjectInput(new Path());
+				facts.addObjectInput(new End(10,10));
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
@@ -137,6 +139,7 @@ public class PanelGame extends JPanel {
 			}
 			AnswerSet s = sets.getAnswersets().get(sets.getAnswersets().size()-1);
 			List<Path> path = new LinkedList<>();
+			End end = null;
 			boolean placed = false;
 			try {	
 				
@@ -147,7 +150,14 @@ public class PanelGame extends JPanel {
 							placed = true;
 					}else if(obj instanceof Path) {
 						Path o = (Path) obj;
+						if(o.getN() == 0)
+							continue;
 						path.add(o);
+					}else if(obj instanceof End) {
+						End e = (End) obj;
+						if(e.getX()==10)
+							continue;
+						end = e;
 					}
 				}
 				path.sort(new Comparator<Path>() {
@@ -218,6 +228,8 @@ public class PanelGame extends JPanel {
 						}
 					}
 				}								
+
+				jcell[end.getY()][end.getX()].setIcon(factory.getHere());
 				
 				
 			} catch (Exception e) {

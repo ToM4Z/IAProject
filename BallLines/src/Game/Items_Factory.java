@@ -14,7 +14,7 @@ public class Items_Factory {
 		return instance;
 	}
 
-	private ImageIcon floor, next;
+	private ImageIcon floor, next, here;
 	private ImageIcon reb_ball, red_star;
 	private ImageIcon yellow_ball, yellow_star;
 	private ImageIcon blue_ball, blue_star;
@@ -30,6 +30,7 @@ public class Items_Factory {
 
 		floor = new ImageIcon(tool.createImage(Settings.Floor));
 		next = new ImageIcon(tool.createImage(Settings.Next));
+		here = new ImageIcon(tool.createImage(Settings.Here));
 
 		reb_ball = new ImageIcon(tool.createImage(Settings.Balls + "red_ball.png"));
 		red_star = new ImageIcon(tool.createImage(Settings.Stars + "red_star.png"));
@@ -52,7 +53,7 @@ public class Items_Factory {
 		low = new ImageIcon(tool.createImage(Settings.Path + "low.png"));
 		high = new ImageIcon(tool.createImage(Settings.Path+ "high.png"));
 		
-		arrowL = new ImageIcon(tool.createImage(Settings.Path + "arrowD.png"));
+		arrowL = new ImageIcon(tool.createImage(Settings.Path + "arrowL.png"));
 		arrowR = new ImageIcon(tool.createImage(Settings.Path + "arrowR.png"));
 		arrowU = new ImageIcon(tool.createImage(Settings.Path + "arrowU.png"));
 		arrowD = new ImageIcon(tool.createImage(Settings.Path + "arrowD.png"));
@@ -86,6 +87,10 @@ public class Items_Factory {
 		case fucsia: return getFucsia_star();
 		default: return null;
 		}
+	}
+	
+	public ImageIcon getHere() {
+		return here;
 	}
 
 	public ImageIcon getLow() {
