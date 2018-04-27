@@ -189,16 +189,27 @@ public class PanelGame extends JPanel {
 				used.remove(new Used(start.getX(), start.getY()));
 
 				for (int i = 0, x = start.getX(), y = start.getY(); x != end.getX() || y != end.getY(); ++i) {
-
-					if (used.contains(new Used(x + 1, y)))
+					boolean pass = false;
+					
+					if (used.contains(new Used(x + 1, y))) {
 						++x;
-					else if (used.contains(new Used(x - 1, y)))
+						pass = true;
+					}else if (used.contains(new Used(x - 1, y))) {
 						--x;
-					else if (used.contains(new Used(x, y + 1)))
+						pass = true;
+					}else if (used.contains(new Used(x, y + 1))) {
 						++y;
-					else if (used.contains(new Used(x, y - 1)))
+						pass = true;
+					}else if (used.contains(new Used(x, y - 1))) {
 						--y;
-
+						pass = true;
+					}
+					if(!pass) {
+						path.removeAll(path);
+						i=0;
+						x=start.getX();
+						y=start.getY();
+					}
 					path.add(new Path(i, x, y));
 					used.remove(new Used(x, y));
 					System.out.println(path.get(path.size()-1));
