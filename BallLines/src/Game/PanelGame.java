@@ -8,12 +8,9 @@ import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.util.Comparator;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -23,10 +20,10 @@ import javax.swing.JPanel;
 import Atoms.Cell;
 import Atoms.End;
 import Atoms.Path;
+import Atoms.Spostamento;
 import Atoms.Star;
 import Atoms.Start;
 import Atoms.Used;
-import Atoms.isReachable;
 import it.unical.mat.embasp.base.Handler;
 import it.unical.mat.embasp.base.InputProgram;
 import it.unical.mat.embasp.languages.asp.ASPInputProgram;
@@ -44,11 +41,12 @@ public class PanelGame extends JPanel {
 	private Items_Factory factory;
 	private Random random;
 	private boolean fase;
-	private List<Used> used;
+	private List<Path> path;
+	private List<Star> stars;
 	private Start start = null;
 	private End end = null;
 
-	private static Handler handler;
+	private static Handler handlerAI, handlerPath;
 
 	public PanelGame() {
 		factory = Items_Factory.getInstance();
@@ -60,7 +58,6 @@ public class PanelGame extends JPanel {
 
 		cell = new int[9][9];
 		jcell = new JLabel[9][9];
-		used = new LinkedList<>();
 
 		for (int i = 0; i < 9; ++i)
 			for (int j = 0; j < 9; ++j) {
@@ -105,25 +102,21 @@ public class PanelGame extends JPanel {
 			jcell[x][y].setIcon(factory.getBall(Color.getColor(c)));
 		}
 
-//		cell[0][0] = 1;
-//		jcell[0][0].setIcon(factory.getBall(Color.getColor(1)));
-		cell[2][0] = 1;
-		jcell[2][0].setIcon(factory.getBall(Color.getColor(1)));
-		cell[2][1] = 1;
-		jcell[2][1].setIcon(factory.getBall(Color.getColor(1)));
-		cell[2][2] = 1;
-		jcell[2][2].setIcon(factory.getBall(Color.getColor(1)));
-		cell[1][1] = 1;
-		jcell[1][1].setIcon(factory.getBall(Color.getColor(1)));
-
-		// chooseWhereSpawnBalls(); // scelgo dove spawneranno le prossime 3 palline
-		// PrintMatrix();
-
+		
+		stars = new LinkedList<>();
+		chooseWhereSpawnBalls(); // scelgo dove spawneranno le prossime 3 palline
+		
 		fase = false;
-		handler = new DesktopHandler(new DLV2DesktopService("lib/dlv2"));
+
+		handlerAI = new DesktopHandler(new DLV2DesktopService("lib/dlv2"));
 		InputProgram encoding = new ASPInputProgram();
+		encoding.addFilesPath("encodings/gamenew");
+		handlerAI.addProgram(encoding);
+
+		handlerPath = new DesktopHandler(new DLV2DesktopService("lib/dlv2"));
+		encoding = new ASPInputProgram();
 		encoding.addFilesPath("encodings/path");
-		handler.addProgram(encoding);
+		handlerPath.addProgram(encoding);
 	}
 
 	private void next() {
@@ -135,37 +128,79 @@ public class PanelGame extends JPanel {
 			// calcolo dove spostare una pallina e
 			// disegno il path su schermo
 
-			InputProgram facts = new ASPInputProgram();
+			InputProgram factsAI = new ASPInputProgram();
+			InputProgram factsPath = new ASPInputProgram();
 			try {
 				for (int i = 0; i < cell.length; i++)
 					for (int j = 0; j < cell.length; j++) {
 						Cell x = new Cell(j, i, cell[i][j]);
 
 						if (x.getValue() > 10) {
-							facts.addObjectInput(new Star(j, i, x.getValue() - 10));
+							factsAI.addObjectInput(new Star(j, i, x.getValue() - 10));
 							x.setValue(0);
 						}
-						// System.out.println(x.toString());
-						facts.addObjectInput(x);
+//						System.out.println(x.toString());
+						factsAI.addObjectInput(x);
+						factsPath.addObjectInput(x);
 					}
-				facts.addObjectInput(new Used(10, 10));
-				facts.addObjectInput(new Start(10, 10));
-				facts.addObjectInput(new End(10, 10));
+				factsAI.addObjectInput(new Spostamento(10, 10, 10, 10, 10));
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
 
-			handler.addProgram(facts);
+			handlerAI.addProgram(factsAI);
 
-			AnswerSets sets = (AnswerSets) handler.startSync();
+			AnswerSets sets = (AnswerSets) handlerAI.startSync();
+			handlerAI.removeProgram(factsAI);
 
-			int size = sets.getAnswersets().size();
-			if (size == 0) {
-				System.out.println("ZERO");
+			if (sets.getAnswersets().size() == 0) {
+				System.out.println("ZEROAI");
 				System.out.println(sets.getErrors());
 				return;
 			}
+			
+			try {
+				start = null;
+				end = null;
+				
+				for( Object obj : sets.getAnswersets().get(sets.getAnswersets().size() - 1).getAtoms()) {
+				
+					if (obj instanceof Spostamento) {
+						Spostamento o = (Spostamento) obj;
+						if (o.getX1() == 10)
+							continue;
+						start = new Start(o.getX1(),o.getY1());
+						end = new End(o.getX2(), o.getY2());
+					}
+				}				
+				
+				System.out.println(start);
+				System.out.println(end);
+				
+				factsPath.addObjectInput(start);
+				factsPath.addObjectInput(end);
+				factsPath.addObjectInput(new Used(10, 10));
+				handlerPath.addProgram(factsPath);
+
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+
+
+			sets = (AnswerSets) handlerPath.startSync();
+			handlerPath.removeProgram(factsPath);
+
+			if (sets.getAnswersets().size() == 0) {
+				System.out.println("ZEROPATH");
+				System.out.println(sets.getErrors());
+				return;
+			}
+			
 			AnswerSet s = sets.getAnswersets().get(sets.getAnswersets().size() - 1);
+
+			List<Used> used = new LinkedList<>();
+			path = new LinkedList<>();
+			
 			try {
 
 				for (Object obj : s.getAtoms()) {
@@ -174,24 +209,10 @@ public class PanelGame extends JPanel {
 						if (o.getX() == 10)
 							continue;
 						used.add(o);
-					}
-					if (obj instanceof Start) {
-						Start o = (Start) obj;
-						if (o.getX() == 10)
-							continue;
-						start = o;
-					} else if (obj instanceof End) {
-						End e = (End) obj;
-						if (e.getX() == 10)
-							continue;
-						end = e;
+//						System.out.println(o);
 					}
 				}
 
-				// for(Used u : used)
-				// System.out.println(u);
-
-				LinkedList<Path> path = new LinkedList<>();
 
 				path.add(new Path(0, start.getX(), start.getY()));
 				used.remove(new Used(start.getX(), start.getY()));
@@ -220,8 +241,8 @@ public class PanelGame extends JPanel {
 					}
 					path.add(new Path(i, x, y));
 					used.remove(new Used(x, y));
-					System.out.println(path.get(path.size() - 1));
-					// Thread.sleep(500);
+//					System.out.println(path.get(path.size() - 1));
+//					Thread.sleep(500);
 				}
 
 				for (int i = 1; i < path.size() - 1; ++i) {
@@ -230,10 +251,10 @@ public class PanelGame extends JPanel {
 					Path next = path.get(i + 1);
 
 					ImageIcon img;
-					System.out.println("now " + now);
-					System.out.println("prec " + prec);
-					System.out.println("next " + next);
-					System.out.println();
+					// System.out.println("now " + now);
+					// System.out.println("prec " + prec);
+					// System.out.println("next " + next);
+					// System.out.println();
 
 					if (now.getX() != prec.getX()) {
 
@@ -270,10 +291,8 @@ public class PanelGame extends JPanel {
 							if (now.getX() != next.getX()) {
 								if (now.getX() + 1 == next.getX())
 									img = factory.getCurveDR();
-								else {
+								else
 									img = factory.getCurveUR();
-									System.out.println("UR2");
-								}
 							} else
 								img = factory.getLow();
 						}
@@ -307,11 +326,21 @@ public class PanelGame extends JPanel {
 			// spawnate altre palline
 
 			// altrimenti spawno le palline e torno al rigo 64
-			for (Used p : used)
+			for (Path p : path)
 				jcell[p.getY()][p.getX()].setIcon(null);
-
-			used.clear();
-
+			path.clear();
+			
+			cell[end.getY()][end.getX()] = cell[start.getY()][start.getX()];
+			cell[start.getY()][start.getX()] = 0;			
+			jcell[end.getY()][end.getX()].setIcon(factory.getBall(Color.getColor(cell[end.getY()][end.getX()])));
+			
+			for(Star s : stars) {
+				cell[s.getY()][s.getX()] = s.getV();			
+				jcell[s.getY()][s.getX()].setIcon(factory.getBall(Color.getColor(s.getV())));				
+			}
+			stars.clear();
+			
+			chooseWhereSpawnBalls(); 
 		}
 	}
 
@@ -330,6 +359,7 @@ public class PanelGame extends JPanel {
 
 			cell[x][y] = c + 10;
 			jcell[x][y].setIcon(factory.getStar(Color.getColor(c)));
+			stars.add(new Star(y,x,c));
 		}
 	}
 

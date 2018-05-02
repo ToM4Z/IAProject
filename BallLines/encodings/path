@@ -14,13 +14,9 @@ reachable(X,Y,X2,Y2):- reachable(X,Y,X1,Y1), adj(X1,Y1,X2,Y2), used(X2,Y2).
 
 :- used(X,Y), #count{X1,Y1: used(X1,Y1), adj(X,Y,X1,Y1)}>2.
 :- used(X,Y), #count{X1,Y1: used(X1,Y1), adj(X,Y,X1,Y1)}=0.
+:- start(X,Y), #count{X1,Y1: used(X1,Y1), adj(X,Y,X1,Y1)}<>1.
 
-isReachable(1) :- start(XS,YS), end(XE,YE), reachable(XS,YS,XE,YE).
-:- not isReachable(1).
-
-start(1,2).
-end(0,0).
+isReachable :- start(XS,YS), end(XE,YE), reachable(XS,YS,XE,YE).
+:- not isReachable.
 
 giveUsed(X,Y) :- used(X,Y).
-giveStart(X,Y) :- start(X,Y).
-giveEnd(X,Y) :- end(X,Y).
