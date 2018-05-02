@@ -187,6 +187,7 @@ spostamentook(R0, C0, R, C, V) :- spostamentook4(R0, C0, R, C, V).
 %cell(8,0,0). cell(8,1,3). cell(8,2,0). cell(8,3,0). cell(8,4,0). cell(8,5,0). cell(8,6,0). cell(8,7,0). cell(8,8,0).
 
 giveSpostamento(A, B, C, D, E) :- spostamento(A, B, C, D, E).
+giveQuattroCelle(R1, C1, R2, C2, R3, C3, R4, C4) :- quattrocelle(R1, C1, R2, C2, R3, C3, R4, C4).
 
 %trecelle(A, B, C, D, E, F)?
 %duecelleadiacentidiags(A, B, C, D, E)?

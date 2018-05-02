@@ -19,8 +19,6 @@ public class Items_Factory {
 	private ImageIcon yellow_ball, yellow_star;
 	private ImageIcon blue_ball, blue_star;
 	private ImageIcon green_ball, green_star;
-	private ImageIcon fucsia_ball, fucsia_star;
-	private ImageIcon violet_ball, violet_star;
 	private ImageIcon low, high;
 	private ImageIcon arrowL, arrowR, arrowU, arrowD;
 	private ImageIcon curveDL, curveDR, curveUL, curveUR;
@@ -43,12 +41,6 @@ public class Items_Factory {
 
 		green_ball = new ImageIcon(tool.createImage(Settings.Balls + "green_ball.png"));
 		green_star = new ImageIcon(tool.createImage(Settings.Stars + "green_star.png"));
-
-		fucsia_ball = new ImageIcon(tool.createImage(Settings.Balls + "fucsia_ball.png"));
-		fucsia_star = new ImageIcon(tool.createImage(Settings.Stars + "fucsia_star.png"));
-
-		violet_ball = new ImageIcon(tool.createImage(Settings.Balls + "violet_ball.png"));
-		violet_star = new ImageIcon(tool.createImage(Settings.Stars + "violet_star.png"));
 		
 		low = new ImageIcon(tool.createImage(Settings.Path + "low.png"));
 		high = new ImageIcon(tool.createImage(Settings.Path+ "high.png"));
@@ -71,8 +63,6 @@ public class Items_Factory {
 		case yellow: return getYellow_ball();
 		case green: return getGreen_ball();
 		case blue: return getBlue_ball();
-		case violet: return getViolet_ball();
-		case fucsia: return getFucsia_ball();
 		default: return null;
 		}
 	}
@@ -83,8 +73,6 @@ public class Items_Factory {
 		case yellow: return getYellow_star();
 		case green: return getGreen_star();
 		case blue: return getBlue_star();
-		case violet: return getViolet_star();
-		case fucsia: return getFucsia_star();
 		default: return null;
 		}
 	}
@@ -171,22 +159,6 @@ public class Items_Factory {
 
 	public ImageIcon getGreen_star() {
 		return green_star;
-	}
-
-	public ImageIcon getFucsia_ball() {
-		return fucsia_ball;
-	}
-
-	public ImageIcon getFucsia_star() {
-		return fucsia_star;
-	}
-
-	public ImageIcon getViolet_ball() {
-		return violet_ball;
-	}
-
-	public ImageIcon getViolet_star() {
-		return violet_star;
 	}
 
 }
