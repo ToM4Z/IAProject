@@ -7,21 +7,26 @@ import it.unical.mat.embasp.languages.Param;
 public class isReachable {
 
 	@Param(0)
-	private int v;
+	private int n;
 	
 	public isReachable() {
-		v=0;
+		n=0;
 	}
 	
-	public isReachable(int v1) {
-		v=v1;
+	public isReachable(int nn) {
+		n=nn;
+	}
+
+	public int getN() {
+		return n;
+	}
+
+	public void setN(int n) {
+		this.n = n;
 	}
 	
-	public int getV() {
-		return v;
-	}
-	
-	public void setV(int v) {
-		this.v = v;
+	@Override
+	public String toString() {
+		return "isReachable("+n+").";
 	}
 }

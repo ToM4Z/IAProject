@@ -3,21 +3,24 @@ package Atoms;
 import it.unical.mat.embasp.languages.Id;
 import it.unical.mat.embasp.languages.Param;
 
-@Id("giveEnd")
-public class End {
+@Id("star")
+public class Star {
 
 	@Param(0)
 	private int x;
 	@Param(1)
 	private int y;
+	@Param(2)
+	private int v;
 	
-	public End() {
-		x=y=0;
+	public Star() {
+		x=y=v=0;
 	}
 	
-	public End(int xx, int yy) {
+	public Star(int xx,int yy, int vv) {
 		x=xx;
 		y=yy;
+		v=vv;
 	}
 
 	public int getX() {
@@ -35,9 +38,14 @@ public class End {
 	public void setY(int y) {
 		this.y = y;
 	}
-	
-	@Override
-	public String toString() {
-		return "end("+x+","+y+").";
+
+	public int getV() {
+		return v;
 	}
+
+	public void setV(int v) {
+		this.v = v;
+	}
+	
+	
 }
