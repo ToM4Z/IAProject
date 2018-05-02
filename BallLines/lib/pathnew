@@ -1,0 +1,25 @@
+adj(X,Y,X,Y1):-cell(X,Y,_), cell(X,Y1,0), Y1=Y+1.
+adj(X,Y,X1,Y):-cell(X,Y,_), cell(X1,Y,0), X1=X+1.
+adj(X,Y,X,Y1):-cell(X,Y,_), cell(X,Y1,0), Y1=Y-1.
+adj(X,Y,X1,Y):-cell(X,Y,_), cell(X1,Y,0), X1=X-1.
+
+used(X,Y) :- start(X,Y).
+used(X,Y) | notUsed(X,Y) :- cell(X,Y,0).
+
+:~ used(X,Y). [1@1]
+
+reachable(X,Y,X1,Y1):-used(X,Y), used(X1,Y1), adj(X,Y,X1,Y1).
+reachable(X,Y,X2,Y2):- reachable(X,Y,X1,Y1), adj(X1,Y1,X2,Y2), used(X2,Y2).
+
+:- used(X,Y), #count{X1,Y1: used(X1,Y1), adj(X,Y,X1,Y1)}>2.
+:- used(X,Y), #count{X1,Y1: used(X1,Y1), adj(X,Y,X1,Y1)}=0.
+
+isReachable(1) :- start(XS,YS), end(XE,YE), reachable(XS,YS,XE,YE).
+:- not isReachable(1).
+
+start(0,0).
+end(0,8).
+
+giveUsed(X,Y) :- used(X,Y).
+giveStart(X,Y) :- start(X,Y).
+giveEnd(X,Y) :- end(X,Y).
