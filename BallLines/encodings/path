@@ -18,8 +18,8 @@ reachable(X,Y,X2,Y2):- reachable(X,Y,X1,Y1), adj(X1,Y1,X2,Y2), used(X2,Y2).
 isReachable(1) :- start(XS,YS), end(XE,YE), reachable(XS,YS,XE,YE).
 :- not isReachable(1).
 
-start(0,0).
-end(0,8).
+start(1,2).
+end(0,0).
 
 giveUsed(X,Y) :- used(X,Y).
 giveStart(X,Y) :- start(X,Y).

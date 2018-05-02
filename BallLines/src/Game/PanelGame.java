@@ -90,23 +90,31 @@ public class PanelGame extends JPanel {
 		// INIT
 
 		random = new Random();
-		/*
-		 * for (int init = 0, x, y, c; init < 5; init++) { // piazzo le prime 5 palline
-		 * x = random.nextInt(9); y = random.nextInt(9); c = random.nextInt(6) + 1;
-		 * 
-		 * while (cell[x][y] != Color.nullo.getVal()) { x = random.nextInt(9); y =
-		 * random.nextInt(9); }
-		 * 
-		 * cell[x][y] = c; jcell[x][y].setIcon(factory.getBall(Color.getColor(c))); }
-		 */
-		cell[0][0] = 1;
-		jcell[0][0].setIcon(factory.getBall(Color.getColor(1)));
-		// cell[2][1] = 1;
-		// jcell[2][1].setIcon(factory.getBall(Color.getColor(1)));
-		// cell[2][2] = 1;
-		// jcell[2][2].setIcon(factory.getBall(Color.getColor(1)));
-		// cell[1][1] = 1;
-		// jcell[1][1].setIcon(factory.getBall(Color.getColor(1)));
+
+		for (int init = 0, x, y, c; init < 5; init++) { // piazzo le prime 5 palline
+			x = random.nextInt(9);
+			y = random.nextInt(9);
+			c = random.nextInt(6) + 1;
+
+			while (cell[x][y] != Color.nullo.getVal()) {
+				x = random.nextInt(9);
+				y = random.nextInt(9);
+			}
+
+			cell[x][y] = c;
+			jcell[x][y].setIcon(factory.getBall(Color.getColor(c)));
+		}
+
+//		cell[0][0] = 1;
+//		jcell[0][0].setIcon(factory.getBall(Color.getColor(1)));
+		cell[2][0] = 1;
+		jcell[2][0].setIcon(factory.getBall(Color.getColor(1)));
+		cell[2][1] = 1;
+		jcell[2][1].setIcon(factory.getBall(Color.getColor(1)));
+		cell[2][2] = 1;
+		jcell[2][2].setIcon(factory.getBall(Color.getColor(1)));
+		cell[1][1] = 1;
+		jcell[1][1].setIcon(factory.getBall(Color.getColor(1)));
 
 		// chooseWhereSpawnBalls(); // scelgo dove spawneranno le prossime 3 palline
 		// PrintMatrix();
@@ -179,10 +187,10 @@ public class PanelGame extends JPanel {
 						end = e;
 					}
 				}
-				
-//				for(Used u : used)
-//					System.out.println(u);
-				
+
+				// for(Used u : used)
+				// System.out.println(u);
+
 				LinkedList<Path> path = new LinkedList<>();
 
 				path.add(new Path(0, start.getX(), start.getY()));
@@ -190,30 +198,30 @@ public class PanelGame extends JPanel {
 
 				for (int i = 0, x = start.getX(), y = start.getY(); x != end.getX() || y != end.getY(); ++i) {
 					boolean pass = false;
-					
+
 					if (used.contains(new Used(x + 1, y))) {
 						++x;
 						pass = true;
-					}else if (used.contains(new Used(x - 1, y))) {
+					} else if (used.contains(new Used(x - 1, y))) {
 						--x;
 						pass = true;
-					}else if (used.contains(new Used(x, y + 1))) {
+					} else if (used.contains(new Used(x, y + 1))) {
 						++y;
 						pass = true;
-					}else if (used.contains(new Used(x, y - 1))) {
+					} else if (used.contains(new Used(x, y - 1))) {
 						--y;
 						pass = true;
 					}
-					if(!pass) {
+					if (!pass) {
 						path.removeAll(path);
-						i=0;
-						x=start.getX();
-						y=start.getY();
+						i = 0;
+						x = start.getX();
+						y = start.getY();
 					}
 					path.add(new Path(i, x, y));
 					used.remove(new Used(x, y));
-					System.out.println(path.get(path.size()-1));
-//					Thread.sleep(500);
+					System.out.println(path.get(path.size() - 1));
+					// Thread.sleep(500);
 				}
 
 				for (int i = 1; i < path.size() - 1; ++i) {
