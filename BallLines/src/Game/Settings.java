@@ -14,4 +14,6 @@ public final class Settings {
 
 	public final static String Next = ImagesDirectory + "next.png";
 
+	public final static String Here = ImagesDirectory + "HERE.png";
+
 }
