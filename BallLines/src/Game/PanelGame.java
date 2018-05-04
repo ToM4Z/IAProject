@@ -108,6 +108,7 @@ public class PanelGame extends JPanel {
 
 			cell[x][y] = c;
 			jcell[x][y].setIcon(factory.getBall(Color.getColor(c)));
+			
 		}
 
 		stars = new LinkedList<>();
@@ -146,7 +147,7 @@ public class PanelGame extends JPanel {
 							factsAI.addObjectInput(new Star(j, i, x.getValue() - 10));
 							x.setValue(0);
 						}
-						// System.out.println(x.toString());
+						System.out.println(x.toString());
 						factsAI.addObjectInput(x);
 						factsPath.addObjectInput(x);
 					}
