@@ -107,8 +107,8 @@ public class PanelGame extends JPanel {
 			}
 
 			cell[x][y] = c;
-			jcell[x][y].setIcon(factory.getBall(Color.getColor(c)));
-			
+			jcell[x][y].setIcon(factory.getBall(c));
+
 		}
 
 		stars = new LinkedList<>();
@@ -230,7 +230,11 @@ public class PanelGame extends JPanel {
 
 				path.add(new Path(0, start.getX(), start.getY()));
 				used.remove(new Used(start.getX(), start.getY()));
-
+				
+				jcell[start.getY()][start.getX()].setIcon(
+						combineImages(factory.getBall(cell[start.getY()][start.getX()]),
+								factory.getSelected()));
+				
 				for (int i = 0, x = start.getX(), y = start.getY(); x != end.getX() || y != end.getY(); ++i) {
 					boolean pass = false;
 
@@ -248,15 +252,19 @@ public class PanelGame extends JPanel {
 						pass = true;
 					}
 					if (!pass) {
-						path.removeAll(path);
+					/*	path.removeAll(path);
 						i = 0;
 						x = start.getX();
-						y = start.getY();
+						y = start.getY();*/
+						System.out.println("CRASH");
+						for(Used u : used)
+							System.out.println(u);
+						return;
 					}
 					path.add(new Path(i, x, y));
 					used.remove(new Used(x, y));
-					// System.out.println(path.get(path.size() - 1));
-					// Thread.sleep(500);
+					System.out.println(path.get(path.size() - 1));
+					Thread.sleep(100);
 				}
 
 				for (int i = 1; i < path.size() - 1; ++i) {
@@ -264,11 +272,7 @@ public class PanelGame extends JPanel {
 					Path now = path.get(i);
 					Path next = path.get(i + 1);
 
-					ImageIcon img;
-					// System.out.println("now " + now);
-					// System.out.println("prec " + prec);
-					// System.out.println("next " + next);
-					// System.out.println();
+					ImageIcon img = null;
 
 					if (now.getX() != prec.getX()) {
 
@@ -312,15 +316,10 @@ public class PanelGame extends JPanel {
 						}
 					}
 
-					if (cell[now.getY()][now.getX()] > 10) {
-						BufferedImage combinedImage = new BufferedImage(50, 50, BufferedImage.TYPE_INT_ARGB);
-						Graphics2D g = combinedImage.createGraphics();
-						g.drawImage(factory.getStar(Color.getColor(cell[now.getY()][now.getX()] - 10)).getImage(), 0, 0,
-								null);
-						g.drawImage(img.getImage(), 0, 0, null);
-						g.dispose();
-						jcell[now.getY()][now.getX()].setIcon(new ImageIcon(combinedImage));
-					} else
+					if (cell[now.getY()][now.getX()] > 10)
+						jcell[now.getY()][now.getX()].setIcon(
+								combineImages(factory.getStar(cell[now.getY()][now.getX()] - 10),img));
+					else
 						jcell[now.getY()][now.getX()].setIcon(img);
 
 				}
@@ -340,55 +339,82 @@ public class PanelGame extends JPanel {
 			// spawnate altre palline
 
 			// altrimenti spawno le palline e torno al rigo 64
-			for (Path p : path)
+			for (Path p : path) {
 				jcell[p.getY()][p.getX()].setIcon(null);
+				for(Star s : stars)
+					if(s.getX() == p.getX() && s.getY() == p.getY())
+						jcell[s.getY()][s.getX()].setIcon(factory.getStar(s.getV()));
+			}
 			path.clear();
 
 			cell[end.getY()][end.getX()] = cell[start.getY()][start.getX()];
 			cell[start.getY()][start.getX()] = 0;
-			jcell[end.getY()][end.getX()].setIcon(factory.getBall(Color.getColor(cell[end.getY()][end.getX()])));
+			jcell[end.getY()][end.getX()].setIcon(factory.getBall(cell[end.getY()][end.getX()]));
+			
 
-			for (Star s : stars) {
-				cell[s.getY()][s.getX()] = s.getV();
-				jcell[s.getY()][s.getX()].setIcon(factory.getBall(Color.getColor(s.getV())));
-			}
-			stars.clear();
-
-			if(!fiveballs)
+			if(!fiveballs) {
+				for (Star s : stars) {
+					if(end.getX()==s.getX() && end.getY()==s.getY())
+						continue;
+					cell[s.getY()][s.getX()] = s.getV();
+					jcell[s.getY()][s.getX()].setIcon(factory.getBall(s.getV()));
+				}
+				stars.clear();
+				
 				chooseWhereSpawnBalls();
-			else {
+			}else {
 				fiveballs = false;
 				
 				switch(posFiveBalls.getDirection()) {
 				case horizontal:
 					for(int i=posFiveBalls.getC1(); i<=posFiveBalls.getC4(); ++i) {
 						cell[i][posFiveBalls.getR1()] = 0;
-						jcell[i][posFiveBalls.getR1()].setIcon(null);;						
+						jcell[i][posFiveBalls.getR1()].setIcon(null);					
 					}
 					break;
 				case vertical:
 					for(int i=posFiveBalls.getR1(); i<=posFiveBalls.getR4(); ++i) {
 						cell[posFiveBalls.getC1()][i] = 0;
-						jcell[posFiveBalls.getC1()][i].setIcon(null);;						
+						jcell[posFiveBalls.getC1()][i].setIcon(null);					
 					}
 					break;
-				case diagonalDown:
-					for(int i=0; i<5; ++i) {
+				case diagonalRight:
+					for(int i=0; i<4; ++i) {
 						cell[posFiveBalls.getC1()+i][posFiveBalls.getR1()+i] = 0;
-						jcell[posFiveBalls.getC1()+i][posFiveBalls.getR1()+i].setIcon(null);;						
+						jcell[posFiveBalls.getC1()+i][posFiveBalls.getR1()+i].setIcon(null);						
 					}
 					break;
-				case diagonalUp:
-					for(int i=0; i<5; ++i) {
-						cell[posFiveBalls.getC1()+i][posFiveBalls.getR1()-i] = 0;
-						jcell[posFiveBalls.getC1()+i][posFiveBalls.getR1()-i].setIcon(null);;						
-					}
-					break;
+				case diagonalLeft:
+						cell[posFiveBalls.getC1()][posFiveBalls.getR1()] = 0;
+						jcell[posFiveBalls.getC1()][posFiveBalls.getR1()].setIcon(null);
+
+						cell[posFiveBalls.getC2()][posFiveBalls.getR2()] = 0;
+						jcell[posFiveBalls.getC2()][posFiveBalls.getR2()].setIcon(null);
+					
+						cell[posFiveBalls.getC3()][posFiveBalls.getR3()] = 0;
+						jcell[posFiveBalls.getC3()][posFiveBalls.getR3()].setIcon(null);
+
+						cell[posFiveBalls.getC4()][posFiveBalls.getR4()] = 0;
+						jcell[posFiveBalls.getC4()][posFiveBalls.getR4()].setIcon(null);
+						
+						break;
 				}
+				cell[end.getY()][end.getX()] = 0;
+				jcell[end.getY()][end.getX()].setIcon(null);
 				
 				scoreLabel.setText("Scores " + (++scores));
+				posFiveBalls = null;
 			}
 		}
+	}
+
+	private ImageIcon combineImages(ImageIcon img1, ImageIcon img2) {
+		BufferedImage combinedImage = new BufferedImage(50, 50, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g = combinedImage.createGraphics();
+		g.drawImage(img1.getImage(), 0, 0, null);
+		g.drawImage(img2.getImage(), 0, 0, null);
+		g.dispose();
+		return new ImageIcon(combinedImage);
 	}
 
 	// scelgo dove spawneranno le prossime 3 palline
@@ -405,7 +431,7 @@ public class PanelGame extends JPanel {
 			}
 
 			cell[x][y] = c + 10;
-			jcell[x][y].setIcon(factory.getStar(Color.getColor(c)));
+			jcell[x][y].setIcon(factory.getStar(c));
 			stars.add(new Star(y, x, c));
 		}
 	}

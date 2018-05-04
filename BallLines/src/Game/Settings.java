@@ -16,4 +16,6 @@ public final class Settings {
 
 	public final static String Here = ImagesDirectory + "HERE.png";
 
+	public final static String Selected = ImagesDirectory + "selected.png";
+
 }
