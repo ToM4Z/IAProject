@@ -1,5 +1,5 @@
 package Game;
 
 public enum Direction {
-	vertical, horizontal, diagonalUp, diagonalDown;
+	vertical, horizontal, diagonalLeft, diagonalRight;
 }

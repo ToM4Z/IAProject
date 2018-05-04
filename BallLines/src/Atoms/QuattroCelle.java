@@ -45,9 +45,9 @@ public class QuattroCelle {
 		if(c1 == c2)
 			return Direction.vertical;
 		if(c2 == c1+1)
-			return Direction.diagonalDown;
+			return Direction.diagonalRight;
 		else
-			return Direction.diagonalUp;
+			return Direction.diagonalLeft;
 	}
 
 	public int getR1() {
