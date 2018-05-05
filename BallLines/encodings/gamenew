@@ -152,10 +152,10 @@ quattrocelleadiacentiorizz(R, C1, C2, C3, C4, V) :- cell(R, C1, V), cell(R, C2, 
 quattrocelleadiacentiorizz(R, C1, C2, C3, C4, V) :- cell(R, C1, V), cell(R, C2, V), cell(R, C3, V), cell(R, C4, V), C2=C1+1, C3=C2+1, C4=C3+1, V<>0, liberoE(R,C4).
 
 quattrocelleadiacentivert(R1, R2, R3, R4, C, V) :- cell(R1, C, V), cell(R2, C, V), cell(R3, C, V), cell(R4, C, V), R2=R1+1, R3=R2+1, R4=R3+1, V<>0, liberoN(R1,C).
-quattrocelleadiacentivert(R1, R2, R3, R4, C, V) :- cell(R1, C, V), cell(R2, C, V), cell(R3, C, V), cell(R4, C, V), R2=R1+1, R3=R2+1, R4=R3+1, V<>0, liberoN(R4,C).
+quattrocelleadiacentivert(R1, R2, R3, R4, C, V) :- cell(R1, C, V), cell(R2, C, V), cell(R3, C, V), cell(R4, C, V), R2=R1+1, R3=R2+1, R4=R3+1, V<>0, liberoS(R4,C).
 
 quattrocelleadiacentidiagp(R1, C1, R2, C2, R3, C3, R4, C4, V):- cell(R1, C1, V), cell(R2, C2, V), cell(R3, C3, V), cell(R4, C4, V), R2=R1+1, C2=C1+1, R3=R2+1, C3=C2+1, R4=R3+1, C4=C3+1, V<>0, liberoNO(R1,C1).
-quattrocelleadiacentidiagp(R1, C1, R2, C2, R3, C3, R4, C4, V):- cell(R1, C1, V), cell(R2, C2, V), cell(R3, C3, V), cell(R4, C4, V), R2=R1+1, C2=C1+1, R3=R2+1, C3=C2+1, R4=R3+1, C4=C3+1, V<>0, liberoNO(R4,C4).
+quattrocelleadiacentidiagp(R1, C1, R2, C2, R3, C3, R4, C4, V):- cell(R1, C1, V), cell(R2, C2, V), cell(R3, C3, V), cell(R4, C4, V), R2=R1+1, C2=C1+1, R3=R2+1, C3=C2+1, R4=R3+1, C4=C3+1, V<>0, liberoSE(R4,C4).
 
 quattrocelleadiacentidiags(R1, C1, R2, C2, R3, C3, R4, C4, V):- cell(R1, C1, V), cell(R2, C2, V), cell(R3, C3, V), cell(R4, C4, V), R2=R1+1, C2=C1-1, R3=R2+1, C3=C2-1, R4=R3+1, C4=C3-1, V<>0, liberoNE(R1, C1).
 quattrocelleadiacentidiags(R1, C1, R2, C2, R3, C3, R4, C4, V):- cell(R1, C1, V), cell(R2, C2, V), cell(R3, C3, V), cell(R4, C4, V), R2=R1+1, C2=C1-1, R3=R2+1, C3=C2-1, R4=R3+1, C4=C3-1, V<>0, liberoSO(R4, C4).
