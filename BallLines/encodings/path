@@ -12,8 +12,9 @@ used(X,Y) | notUsed(X,Y) :- cell(X,Y,0).
 reachable(X,Y,X1,Y1):-used(X,Y), used(X1,Y1), adj(X,Y,X1,Y1).
 reachable(X,Y,X2,Y2):- reachable(X,Y,X1,Y1), adj(X1,Y1,X2,Y2), used(X2,Y2).
 
-:- used(X,Y), #count{X1,Y1: used(X1,Y1), adj(X,Y,X1,Y1)}>2.
-:- used(X,Y), #count{X1,Y1: used(X1,Y1), adj(X,Y,X1,Y1)}=0.
+:- used(X,Y), #count{X1,Y1: used(X1,Y1), adj(X,Y,X1,Y1)}=A, 
+	#count{X1,Y1: start(X1,Y1), adj(X1,Y1,X,Y)}=B, A+B>2, not start(X,Y), not end(X,Y).
+:- used(X,Y), #count{X1,Y1: used(X1,Y1), adj(X,Y,X1,Y1)}=0, not start(X,Y), not end(X,Y).
 :- start(X,Y), #count{X1,Y1: used(X1,Y1), adj(X,Y,X1,Y1)}<>1.
 
 isReachable :- start(XS,YS), end(XE,YE), reachable(XS,YS,XE,YE).

@@ -199,10 +199,6 @@ spostamentook(R0, C0, R, C, V) :- spostamentook4(R0, C0, R, C, V).
 
 
 giveSpostamento(A, B, C, D, E) :- spostamento(A, B, C, D, E).
-giveQuattroCelle(R1, C1, R2, C2, R3, C3, R4, C4) :- quattrocelle(R1, C1, R2, C2, R3, C3, R4, C4).
-
-
-
 
 %esistecell4(R,C1,R,C2,R,C3,R,C4,V)?
 %reachable(A, B, C, D)?
