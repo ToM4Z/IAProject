@@ -87,22 +87,68 @@ duecelle(R1, C1, R2, C2) :- duecelleadiacentidiags(R1, C1, R2, C2, V).
 
 nduecelle(N) :- N = #count{R0, C0, R1, C1: spostamentook2(R0, C0, R1, C1,V)}.
 
-spostamentook2(R0, C0, R, C, V) :- cell(R, C1, V), cell(R, C2, V), cell(R, C, 0), C1=C+1, V<>0, cell(R0, C0, V), duecelleadiacentiorizz(R, C1, C2, V), not celleuguali(R0,C0, R, C1), not celleuguali(R0,C0, R, C2), ntrecelle(N), nquattrocelle(N), N=0, esistecell2(R,C1,R,C2,V), reachable(R0, C0, R, C).
+spostamentook2(R0, C0, R, C, V) :- cell(R, C1, V), cell(R, C2, V), cell(R, C, 0), C1=C+1, V<>0, cell(R0, C0, V), duecelleadiacentiorizz(R, C1, C2, V), not celleuguali(R0,C0, R, C1), not celleuguali(R0,C0, R, C2), ntrecelle(N), nquattrocelle(N), N=0, esistecell2(R,C1,R,C2,V), reachable(R0, C0, R, C), liberoE(R,C2), liberoO(R,C).
 
-spostamentook2(R0, C0, R, C, V) :- cell(R, C1, V), cell(R, C2, V), cell(R, C, 0), C2=C-1, V<>0, cell(R0, C0, V), duecelleadiacentiorizz(R, C1, C2, V), not celleuguali(R0,C0, R, C1), not celleuguali(R0,C0, R, C2), ntrecelle(N), nquattrocelle(N), N=0, esistecell2(R,C1,R,C2,V), reachable(R0, C0, R, C).
+spostamentook2(R0, C0, R, C, V) :- cell(R, C1, V), cell(R, C2, V), cell(R, C, 0), C1=C+1, V<>0, cell(R0, C0, V), duecelleadiacentiorizz(R, C1, C2, V), not celleuguali(R0,C0, R, C1), not celleuguali(R0,C0, R, C2), ntrecelle(N), nquattrocelle(N), N=0, esistecell2(R,C1,R,C2,V), reachable(R0, C0, R, C), liberoE(R,C2), cell(R,C3), liberoE(R,C3), C3=C2+1.
 
-spostamentook2(R0, C0, R, C, V):- cell(R1, C, V), cell(R2, C, V), cell(R, C, 0), R1=R+1, V<>0, cell(R0, C0, V), duecelleadiacentivert(R1, R2, C, V), not celleuguali(R0,C0, R1, C), not celleuguali(R0,C0, R2, C), ntrecelle(N), nquattrocelle(N), N=0, esistecell2(R1,C,R2,C,V), reachable(R0, C0, R, C).
+spostamentook2(R0, C0, R, C, V) :- cell(R, C1, V), cell(R, C2, V), cell(R, C, 0), C1=C+1, V<>0, cell(R0, C0, V), duecelleadiacentiorizz(R, C1, C2, V), not celleuguali(R0,C0, R, C1), not celleuguali(R0,C0, R, C2), ntrecelle(N), nquattrocelle(N), N=0, esistecell2(R,C1,R,C2,V), reachable(R0, C0, R, C), liberoO(R,C), cell(R,C3,_), C3=C-1, liberoO(R,C3).
 
-spostamentook2(R0, C0, R, C, V):- cell(R1, C, V), cell(R2, C, V), cell(R, C, 0), R2=R-1, V<>0, cell(R0, C0, V), duecelleadiacentivert(R1, R2, C, V), not celleuguali(R0,C0, R1, C), not celleuguali(R0,C0, R2, C), ntrecelle(N), nquattrocelle(N), N=0, esistecell2(R1,C,R2,C,V), reachable(R0, C0, R, C).
 
-spostamentook2(R0, C0, R, C, V) :- cell(R1, C1, V), cell(R2, C2, V), cell(R, C, 0), R1=R+1, C1=C+1, V<>0, cell(R0, C0, V), duecelleadiacentidiagp(R1, C1, R2, C2, V), not celleuguali(R0,C0, R1, C1), not celleuguali(R0,C0, R2, C2), ntrecelle(N), nquattrocelle(N), N=0, esistecell2(R1,C1,R2,C2,V), reachable(R0, C0, R, C).
 
-spostamentook2(R0, C0, R, C, V) :- cell(R1, C1, V), cell(R2, C2, V), cell(R, C, 0), R2=R-1, C2=C-1, V<>0, cell(R0, C0, V), duecelleadiacentidiagp(R1, C1, R2, C2, V), not celleuguali(R0,C0, R1, C1), not celleuguali(R0,C0, R2, C2), ntrecelle(N), nquattrocelle(N), N=0, esistecell2(R1,C1,R2,C2,V), reachable(R0, C0, R, C).
 
-spostamentook2(R0, C0, R, C, V) :- cell(R1, C1, V), cell(R2, C2, V), cell(R, C, 0), R1=R+1, C1=C-1, V<>0, cell(R0, C0, V), duecelleadiacentidiags(R1, C1, R2, C2, V), not celleuguali(R0,C0, R1, C1), not celleuguali(R0,C0, R2, C2), ntrecelle(N), nquattrocelle(N), N=0, esistecell2(R1,C1,R2,C2,V), reachable(R0, C0, R, C).
+spostamentook2(R0, C0, R, C, V) :- cell(R, C1, V), cell(R, C2, V), cell(R, C, 0), C2=C-1, V<>0, cell(R0, C0, V), duecelleadiacentiorizz(R, C1, C2, V), not celleuguali(R0,C0, R, C1), not celleuguali(R0,C0, R, C2), ntrecelle(N), nquattrocelle(N), N=0, esistecell2(R,C1,R,C2,V), reachable(R0, C0, R, C), liberoE(R,C), liberoO(R,C1).
 
-spostamentook2(R0, C0, R, C, V) :- cell(R1, C1, V), cell(R2, C2, V), cell(R, C, 0), R2=R-1, C2=C+1, V<>0, cell(R0, C0, V), duecelleadiacentidiags(R1, C1, R2, C2, V), not celleuguali(R0,C0, R1, C1), not celleuguali(R0,C0, R2, C2), ntrecelle(N), nquattrocelle(N), N=0, esistecell2(R1,C1,R2,C2,V), reachable(R0, C0, R, C).
+spostamentook2(R0, C0, R, C, V) :- cell(R, C1, V), cell(R, C2, V), cell(R, C, 0), C2=C-1, V<>0, cell(R0, C0, V), duecelleadiacentiorizz(R, C1, C2, V), not celleuguali(R0,C0, R, C1), not celleuguali(R0,C0, R, C2), ntrecelle(N), nquattrocelle(N), N=0, esistecell2(R,C1,R,C2,V), reachable(R0, C0, R, C), liberoE(R,C), cell(R,C3,_), C3=C+1.
 
+
+spostamentook2(R0, C0, R, C, V) :- cell(R, C1, V), cell(R, C2, V), cell(R, C, 0), C2=C-1, V<>0, cell(R0, C0, V), duecelleadiacentiorizz(R, C1, C2, V), not celleuguali(R0,C0, R, C1), not celleuguali(R0,C0, R, C2), ntrecelle(N), nquattrocelle(N), N=0, esistecell2(R,C1,R,C2,V), reachable(R0, C0, R, C), liberoO(R,C1), cell(R,C3,_), C3=C1-1, liberoO(R,C3).
+
+
+
+
+
+spostamentook2(R0, C0, R, C, V):- cell(R1, C, V), cell(R2, C, V), cell(R, C, 0), R1=R+1, V<>0, cell(R0, C0, V), duecelleadiacentivert(R1, R2, C, V), not celleuguali(R0,C0, R1, C), not celleuguali(R0,C0, R2, C), ntrecelle(N), nquattrocelle(N), N=0, esistecell2(R1,C,R2,C,V), reachable(R0, C0, R, C), liberoN(R,C), cell(R3,C,_), R3=R-1, liberoN(R3,C).
+
+spostamentook2(R0, C0, R, C, V):- cell(R1, C, V), cell(R2, C, V), cell(R, C, 0), R1=R+1, V<>0, cell(R0, C0, V), duecelleadiacentivert(R1, R2, C, V), not celleuguali(R0,C0, R1, C), not celleuguali(R0,C0, R2, C), ntrecelle(N), nquattrocelle(N), N=0, esistecell2(R1,C,R2,C,V), reachable(R0, C0, R, C), liberoS(R2,C), liberoN(R,C).
+
+spostamentook2(R0, C0, R, C, V):- cell(R1, C, V), cell(R2, C, V), cell(R, C, 0), R1=R+1, V<>0, cell(R0, C0, V), duecelleadiacentivert(R1, R2, C, V), not celleuguali(R0,C0, R1, C), not celleuguali(R0,C0, R2, C), ntrecelle(N), nquattrocelle(N), N=0, esistecell2(R1,C,R2,C,V), reachable(R0, C0, R, C), liberoS(R2,C), cell(R3,C,_), libero(R3,C), R3=R2+1.
+
+spostamentook2(R0, C0, R, C, V):- cell(R1, C, V), cell(R2, C, V), cell(R, C, 0), R2=R-1, V<>0, cell(R0, C0, V), duecelleadiacentivert(R1, R2, C, V), not celleuguali(R0,C0, R1, C), not celleuguali(R0,C0, R2, C), ntrecelle(N), nquattrocelle(N), N=0, esistecell2(R1,C,R2,C,V), reachable(R0, C0, R, C), liberoN(R1,C), cell(R3,C,_), R3=R1-1, liberoN(R3,C).
+
+spostamentook2(R0, C0, R, C, V):- cell(R1, C, V), cell(R2, C, V), cell(R, C, 0), R2=R-1, V<>0, cell(R0, C0, V), duecelleadiacentivert(R1, R2, C, V), not celleuguali(R0,C0, R1, C), not celleuguali(R0,C0, R2, C), ntrecelle(N), nquattrocelle(N), N=0, esistecell2(R1,C,R2,C,V), reachable(R0, C0, R, C), liberoN(R1,C), liberoS(R,C).
+
+spostamentook2(R0, C0, R, C, V):- cell(R1, C, V), cell(R2, C, V), cell(R, C, 0), R2=R-1, V<>0, cell(R0, C0, V), duecelleadiacentivert(R1, R2, C, V), not celleuguali(R0,C0, R1, C), not celleuguali(R0,C0, R2, C), ntrecelle(N), nquattrocelle(N), N=0, esistecell2(R1,C,R2,C,V), reachable(R0, C0, R, C), liberoS(R,C), cell(R3,C,_), R3=R+1, liberoS(R3,C).
+
+
+
+spostamentook2(R0, C0, R, C, V) :- cell(R1, C1, V), cell(R2, C2, V), cell(R, C, 0), R1=R+1, C1=C+1, V<>0, cell(R0, C0, V), duecelleadiacentidiagp(R1, C1, R2, C2, V), not celleuguali(R0,C0, R1, C1), not celleuguali(R0,C0, R2, C2), ntrecelle(N), nquattrocelle(N), N=0, esistecell2(R1,C1,R2,C2,V), reachable(R0, C0, R, C), liberoNO(R,C), cell(R3,C3,_), R3=R-1, C3=C-1, liberoNO(R3,C3).
+
+spostamentook2(R0, C0, R, C, V) :- cell(R1, C1, V), cell(R2, C2, V), cell(R, C, 0), R1=R+1, C1=C+1, V<>0, cell(R0, C0, V), duecelleadiacentidiagp(R1, C1, R2, C2, V), not celleuguali(R0,C0, R1, C1), not celleuguali(R0,C0, R2, C2), ntrecelle(N), nquattrocelle(N), N=0, esistecell2(R1,C1,R2,C2,V), reachable(R0, C0, R, C), liberoNO(R,C), liberoSE(R2,C2).
+
+spostamentook2(R0, C0, R, C, V) :- cell(R1, C1, V), cell(R2, C2, V), cell(R, C, 0), R1=R+1, C1=C+1, V<>0, cell(R0, C0, V), duecelleadiacentidiagp(R1, C1, R2, C2, V), not celleuguali(R0,C0, R1, C1), not celleuguali(R0,C0, R2, C2), ntrecelle(N), nquattrocelle(N), N=0, esistecell2(R1,C1,R2,C2,V), reachable(R0, C0, R, C), liberoSE(R2,C2), cell(R3,C3,_), R3=R2+1, C3=C2+1, liberoSE(R3,C3).
+
+
+spostamentook2(R0, C0, R, C, V) :- cell(R1, C1, V), cell(R2, C2, V), cell(R, C, 0), R2=R-1, C2=C-1, V<>0, cell(R0, C0, V), duecelleadiacentidiagp(R1, C1, R2, C2, V), not celleuguali(R0,C0, R1, C1), not celleuguali(R0,C0, R2, C2), ntrecelle(N), nquattrocelle(N), N=0, esistecell2(R1,C1,R2,C2,V), reachable(R0, C0, R, C), liberoNO(R1,C1), cell(R3,C3,_), R3=R1-1, C3=C1-1, liberoNO(R3,C3).
+
+spostamentook2(R0, C0, R, C, V) :- cell(R1, C1, V), cell(R2, C2, V), cell(R, C, 0), R2=R-1, C2=C-1, V<>0, cell(R0, C0, V), duecelleadiacentidiagp(R1, C1, R2, C2, V), not celleuguali(R0,C0, R1, C1), not celleuguali(R0,C0, R2, C2), ntrecelle(N), nquattrocelle(N), N=0, esistecell2(R1,C1,R2,C2,V), reachable(R0, C0, R, C), liberoNO(R1,C1), liberoSE(R,C).
+
+spostamentook2(R0, C0, R, C, V) :- cell(R1, C1, V), cell(R2, C2, V), cell(R, C, 0), R2=R-1, C2=C-1, V<>0, cell(R0, C0, V), duecelleadiacentidiagp(R1, C1, R2, C2, V), not celleuguali(R0,C0, R1, C1), not celleuguali(R0,C0, R2, C2), ntrecelle(N), nquattrocelle(N), N=0, esistecell2(R1,C1,R2,C2,V), reachable(R0, C0, R, C), liberoSE(R,C), cell(R3,C3,_), R3=R+1, C3=C+1, liberoSE(R3,C3).
+
+
+
+spostamentook2(R0, C0, R, C, V) :- cell(R1, C1, V), cell(R2, C2, V), cell(R, C, 0), R1=R+1, C1=C-1, V<>0, cell(R0, C0, V), duecelleadiacentidiags(R1, C1, R2, C2, V), not celleuguali(R0,C0, R1, C1), not celleuguali(R0,C0, R2, C2), ntrecelle(N), nquattrocelle(N), N=0, esistecell2(R1,C1,R2,C2,V), reachable(R0, C0, R, C), liberoNE(R,C), cell(R3,C3,_), R3=R-1, C3=C+1, liberoNE(R3,C3).
+
+spostamentook2(R0, C0, R, C, V) :- cell(R1, C1, V), cell(R2, C2, V), cell(R, C, 0), R1=R+1, C1=C-1, V<>0, cell(R0, C0, V), duecelleadiacentidiags(R1, C1, R2, C2, V), not celleuguali(R0,C0, R1, C1), not celleuguali(R0,C0, R2, C2), ntrecelle(N), nquattrocelle(N), N=0, esistecell2(R1,C1,R2,C2,V), reachable(R0, C0, R, C), liberoNE(R,C), liberoSO(R2,C2).
+
+spostamentook2(R0, C0, R, C, V) :- cell(R1, C1, V), cell(R2, C2, V), cell(R, C, 0), R1=R+1, C1=C-1, V<>0, cell(R0, C0, V), duecelleadiacentidiags(R1, C1, R2, C2, V), not celleuguali(R0,C0, R1, C1), not celleuguali(R0,C0, R2, C2), ntrecelle(N), nquattrocelle(N), N=0, esistecell2(R1,C1,R2,C2,V), reachable(R0, C0, R, C), liberoSO(R2,C2), cell(R3,C3,_), R3=R2+1, C3=C2-1, liberoSO(R3,C3).
+
+
+
+spostamentook2(R0, C0, R, C, V) :- cell(R1, C1, V), cell(R2, C2, V), cell(R, C, 0), R2=R-1, C2=C+1, V<>0, cell(R0, C0, V), duecelleadiacentidiags(R1, C1, R2, C2, V), not celleuguali(R0,C0, R1, C1), not celleuguali(R0,C0, R2, C2), ntrecelle(N), nquattrocelle(N), N=0, esistecell2(R1,C1,R2,C2,V), reachable(R0, C0, R, C), liberoNE(R1,C1), cell(R3,C3,_), R3=R2-1, C3=C2+1, liberoNE(R3,C3).
+
+spostamentook2(R0, C0, R, C, V) :- cell(R1, C1, V), cell(R2, C2, V), cell(R, C, 0), R2=R-1, C2=C+1, V<>0, cell(R0, C0, V), duecelleadiacentidiags(R1, C1, R2, C2, V), not celleuguali(R0,C0, R1, C1), not celleuguali(R0,C0, R2, C2), ntrecelle(N), nquattrocelle(N), N=0, esistecell2(R1,C1,R2,C2,V), reachable(R0, C0, R, C), liberoNE(R1,C1), liberoSO(R,C).
+
+spostamentook2(R0, C0, R, C, V) :- cell(R1, C1, V), cell(R2, C2, V), cell(R, C, 0), R2=R-1, C2=C+1, V<>0, cell(R0, C0, V), duecelleadiacentidiags(R1, C1, R2, C2, V), not celleuguali(R0,C0, R1, C1), not celleuguali(R0,C0, R2, C2), ntrecelle(N), nquattrocelle(N), N=0, esistecell2(R1,C1,R2,C2,V), reachable(R0, C0, R, C), liberoSO(R,C), cell(R3,C3,_), R3=R+1, C3=C-1, liberoSO(R3,C3).
 
 
 %++++++++++++++++++++++GESIONE TRE CELLE++++++++++++++++++++
@@ -127,23 +173,39 @@ trecelle(R1, C1, R2, C2, R3, C3) :- trecelleadiacentidiags(R1, C1, R2, C2, R3, C
 
 ntrecelle(N) :- N = #count{R0, C0, R1, C1: spostamentook3(R0, C0, R1, C1,V)}.
 
-spostamentook3(R0, C0, R, C, V) :- cell(R, C1, V), cell(R, C2, V), cell(R, C3, V), cell(R, C, 0), C1=C+1, V<>0, cell(R0, C0, V), trecelleadiacentiorizz(R, C1, C2, C3, V), not celleuguali(R0,C0, R, C1), not celleuguali(R0,C0, R, C2), not celleuguali(R0,C0, R, C3), nquattrocelle(N), N=0, esistecell3(R,C1,R,C2,R,C3,V), reachable(R0, C0, R, C).
+spostamentook3(R0, C0, R, C, V) :- cell(R, C1, V), cell(R, C2, V), cell(R, C3, V), cell(R, C, 0), C1=C+1, V<>0, cell(R0, C0, V), trecelleadiacentiorizz(R, C1, C2, C3, V), not celleuguali(R0,C0, R, C1), not celleuguali(R0,C0, R, C2), not celleuguali(R0,C0, R, C3), nquattrocelle(N), N=0, esistecell3(R,C1,R,C2,R,C3,V), reachable(R0, C0, R, C), liberoE(R,C3).
 
-spostamentook3(R0, C0, R, C, V) :- cell(R, C1, V), cell(R, C2, V), cell(R, C3, V), cell(R, C, 0), C3=C-1, V<>0, cell(R0, C0, V), trecelleadiacentiorizz(R, C1, C2, C3, V), not celleuguali(R0,C0, R, C1), not celleuguali(R0,C0, R, C2), not celleuguali(R0,C0, R, C3), nquattrocelle(N), N=0, esistecell3(R,C1,R,C2,R,C3,V), reachable(R0, C0, R, C).
+spostamentook3(R0, C0, R, C, V) :- cell(R, C1, V), cell(R, C2, V), cell(R, C3, V), cell(R, C, 0), C1=C+1, V<>0, cell(R0, C0, V), trecelleadiacentiorizz(R, C1, C2, C3, V), not celleuguali(R0,C0, R, C1), not celleuguali(R0,C0, R, C2), not celleuguali(R0,C0, R, C3), nquattrocelle(N), N=0, esistecell3(R,C1,R,C2,R,C3,V), reachable(R0, C0, R, C), liberoO(R,C).
 
-spostamentook3(R0, C0, R, C, V):- cell(R1, C, V), cell(R2, C, V), cell(R3, C, V), cell(R, C, 0), R1=R+1, V<>0, cell(R0, C0, V), trecelleadiacentivert(R1, R2, R3, C, V), not celleuguali(R0,C0, R1, C), not celleuguali(R0,C0, R2, C), not celleuguali(R0, C0, R3, C), nquattrocelle(N), N=0, esistecell3(R1,C,R2,C,R3,C,V), reachable(R0, C0, R, C).
+spostamentook3(R0, C0, R, C, V) :- cell(R, C1, V), cell(R, C2, V), cell(R, C3, V), cell(R, C, 0), C3=C-1, V<>0, cell(R0, C0, V), trecelleadiacentiorizz(R, C1, C2, C3, V), not celleuguali(R0,C0, R, C1), not celleuguali(R0,C0, R, C2), not celleuguali(R0,C0, R, C3), nquattrocelle(N), N=0, esistecell3(R,C1,R,C2,R,C3,V), reachable(R0, C0, R, C), liberoE(R,C).
 
-spostamentook3(R0, C0, R, C, V):- cell(R1, C, V), cell(R2, C, V), cell(R3, C, V), cell(R, C, 0), R3=R-1, V<>0, cell(R0, C0, V), trecelleadiacentivert(R1, R2, R3, C, V), not celleuguali(R0,C0, R1, C), not celleuguali(R0,C0, R2, C), not celleuguali(R0, C0, R3, C), nquattrocelle(N), N=0, esistecell3(R1,C,R2,C,R3,C,V), reachable(R0, C0, R, C).
+spostamentook3(R0, C0, R, C, V) :- cell(R, C1, V), cell(R, C2, V), cell(R, C3, V), cell(R, C, 0), C3=C-1, V<>0, cell(R0, C0, V), trecelleadiacentiorizz(R, C1, C2, C3, V), not celleuguali(R0,C0, R, C1), not celleuguali(R0,C0, R, C2), not celleuguali(R0,C0, R, C3), nquattrocelle(N), N=0, esistecell3(R,C1,R,C2,R,C3,V), reachable(R0, C0, R, C), liberoO(R,C1).
 
-spostamentook3(R0, C0, R, C, V) :- cell(R1, C1, V), cell(R2, C2, V), cell(R3, C3, V), cell(R, C, 0), R1=R+1, C1=C+1, V<>0, cell(R0, C0, V), trecelleadiacentidiagp(R1, C1, R2, C2, R3, C3, V), not celleuguali(R0,C0, R1, C1), not celleuguali(R0,C0, R2, C2), not celleuguali(R0,C0, R3, C3), nquattrocelle(N), N=0, esistecell3(R1,C1,R2,C2,R3,C3,V), reachable(R0, C0, R, C).
+spostamentook3(R0, C0, R, C, V):- cell(R1, C, V), cell(R2, C, V), cell(R3, C, V), cell(R, C, 0), R1=R+1, V<>0, cell(R0, C0, V), trecelleadiacentivert(R1, R2, R3, C, V), not celleuguali(R0,C0, R1, C), not celleuguali(R0,C0, R2, C), not celleuguali(R0, C0, R3, C), nquattrocelle(N), N=0, esistecell3(R1,C,R2,C,R3,C,V), reachable(R0, C0, R, C), liberoN(R,C).
 
-spostamentook3(R0, C0, R, C, V) :- cell(R1, C1, V), cell(R2, C2, V), cell(R3, C3, V), cell(R, C, 0), R3=R-1, C3=C-1, V<>0, cell(R0, C0, V), trecelleadiacentidiagp(R1, C1, R2, C2, R3, C3, V), not celleuguali(R0,C0, R1, C1), not celleuguali(R0,C0, R2, C2), not celleuguali(R0,C0, R3, C3), nquattrocelle(N), N=0, esistecell3(R1,C1,R2,C2,R3,C3,V), reachable(R0, C0, R, C).
+spostamentook3(R0, C0, R, C, V):- cell(R1, C, V), cell(R2, C, V), cell(R3, C, V), cell(R, C, 0), R1=R+1, V<>0, cell(R0, C0, V), trecelleadiacentivert(R1, R2, R3, C, V), not celleuguali(R0,C0, R1, C), not celleuguali(R0,C0, R2, C), not celleuguali(R0, C0, R3, C), nquattrocelle(N), N=0, esistecell3(R1,C,R2,C,R3,C,V), reachable(R0, C0, R, C), liberoS(R3,C).
+
+spostamentook3(R0, C0, R, C, V):- cell(R1, C, V), cell(R2, C, V), cell(R3, C, V), cell(R, C, 0), R3=R-1, V<>0, cell(R0, C0, V), trecelleadiacentivert(R1, R2, R3, C, V), not celleuguali(R0,C0, R1, C), not celleuguali(R0,C0, R2, C), not celleuguali(R0, C0, R3, C), nquattrocelle(N), N=0, esistecell3(R1,C,R2,C,R3,C,V), reachable(R0, C0, R, C), liberoN(R1,C).
+
+spostamentook3(R0, C0, R, C, V):- cell(R1, C, V), cell(R2, C, V), cell(R3, C, V), cell(R, C, 0), R3=R-1, V<>0, cell(R0, C0, V), trecelleadiacentivert(R1, R2, R3, C, V), not celleuguali(R0,C0, R1, C), not celleuguali(R0,C0, R2, C), not celleuguali(R0, C0, R3, C), nquattrocelle(N), N=0, esistecell3(R1,C,R2,C,R3,C,V), reachable(R0, C0, R, C), liberoS(R,C).
 
 
-spostamentook3(R0, C0, R, C, V) :- cell(R1, C1, V), cell(R2, C2, V), cell(R3, C3, V), cell(R, C, 0), R1=R+1, C1=C-1, V<>0, cell(R0, C0, V), trecelleadiacentidiags(R1, C1, R2, C2, R3, C3, V), not celleuguali(R0,C0, R1, C1), not celleuguali(R0,C0, R2, C2), not celleuguali(R0,C0, R3, C3), nquattrocelle(N), N=0, esistecell3(R1,C1,R2,C2,R3,C3,V), reachable(R0, C0, R, C).
+spostamentook3(R0, C0, R, C, V) :- cell(R1, C1, V), cell(R2, C2, V), cell(R3, C3, V), cell(R, C, 0), R1=R+1, C1=C+1, V<>0, cell(R0, C0, V), trecelleadiacentidiagp(R1, C1, R2, C2, R3, C3, V), not celleuguali(R0,C0, R1, C1), not celleuguali(R0,C0, R2, C2), not celleuguali(R0,C0, R3, C3), nquattrocelle(N), N=0, esistecell3(R1,C1,R2,C2,R3,C3,V), reachable(R0, C0, R, C), liberoNO(R,C).
+
+spostamentook3(R0, C0, R, C, V) :- cell(R1, C1, V), cell(R2, C2, V), cell(R3, C3, V), cell(R, C, 0), R1=R+1, C1=C+1, V<>0, cell(R0, C0, V), trecelleadiacentidiagp(R1, C1, R2, C2, R3, C3, V), not celleuguali(R0,C0, R1, C1), not celleuguali(R0,C0, R2, C2), not celleuguali(R0,C0, R3, C3), nquattrocelle(N), N=0, esistecell3(R1,C1,R2,C2,R3,C3,V), reachable(R0, C0, R, C), liberoSE(R3,C3).
+
+spostamentook3(R0, C0, R, C, V) :- cell(R1, C1, V), cell(R2, C2, V), cell(R3, C3, V), cell(R, C, 0), R3=R-1, C3=C-1, V<>0, cell(R0, C0, V), trecelleadiacentidiagp(R1, C1, R2, C2, R3, C3, V), not celleuguali(R0,C0, R1, C1), not celleuguali(R0,C0, R2, C2), not celleuguali(R0,C0, R3, C3), nquattrocelle(N), N=0, esistecell3(R1,C1,R2,C2,R3,C3,V), reachable(R0, C0, R, C), liberoNO(R1,C1).
+
+spostamentook3(R0, C0, R, C, V) :- cell(R1, C1, V), cell(R2, C2, V), cell(R3, C3, V), cell(R, C, 0), R3=R-1, C3=C-1, V<>0, cell(R0, C0, V), trecelleadiacentidiagp(R1, C1, R2, C2, R3, C3, V), not celleuguali(R0,C0, R1, C1), not celleuguali(R0,C0, R2, C2), not celleuguali(R0,C0, R3, C3), nquattrocelle(N), N=0, esistecell3(R1,C1,R2,C2,R3,C3,V), reachable(R0, C0, R, C), liberoSE(R,C).
+
+spostamentook3(R0, C0, R, C, V) :- cell(R1, C1, V), cell(R2, C2, V), cell(R3, C3, V), cell(R, C, 0), R1=R+1, C1=C-1, V<>0, cell(R0, C0, V), trecelleadiacentidiags(R1, C1, R2, C2, R3, C3, V), not celleuguali(R0,C0, R1, C1), not celleuguali(R0,C0, R2, C2), not celleuguali(R0,C0, R3, C3), nquattrocelle(N), N=0, esistecell3(R1,C1,R2,C2,R3,C3,V), reachable(R0, C0, R, C), liberoNE(R,C).
+
+spostamentook3(R0, C0, R, C, V) :- cell(R1, C1, V), cell(R2, C2, V), cell(R3, C3, V), cell(R, C, 0), R1=R+1, C1=C-1, V<>0, cell(R0, C0, V), trecelleadiacentidiags(R1, C1, R2, C2, R3, C3, V), not celleuguali(R0,C0, R1, C1), not celleuguali(R0,C0, R2, C2), not celleuguali(R0,C0, R3, C3), nquattrocelle(N), N=0, esistecell3(R1,C1,R2,C2,R3,C3,V), reachable(R0, C0, R, C), liberoSO(R3,C3).
+
+spostamentook3(R0, C0, R, C, V) :- cell(R1, C1, V), cell(R2, C2, V), cell(R3, C3, V), cell(R, C, 0), R3=R-1, C3=C+1, V<>0, cell(R0, C0, V), trecelleadiacentidiags(R1, C1, R2, C2, R3, C3, V), not celleuguali(R0,C0, R1, C1), not celleuguali(R0,C0, R2, C2), not celleuguali(R0,C0, R3, C3), nquattrocelle(N), N=0, esistecell3(R1,C1,R2,C2,R3,C3,V), reachable(R0, C0, R, C), liberoNE(R1,C1).
 
 
-spostamentook3(R0, C0, R, C, V) :- cell(R1, C1, V), cell(R2, C2, V), cell(R3, C3, V), cell(R, C, 0), R3=R-1, C3=C+1, V<>0, cell(R0, C0, V), trecelleadiacentidiags(R1, C1, R2, C2, R3, C3, V), not celleuguali(R0,C0, R1, C1), not celleuguali(R0,C0, R2, C2), not celleuguali(R0,C0, R3, C3), nquattrocelle(N), N=0, esistecell3(R1,C1,R2,C2,R3,C3,V), reachable(R0, C0, R, C).
+spostamentook3(R0, C0, R, C, V) :- cell(R1, C1, V), cell(R2, C2, V), cell(R3, C3, V), cell(R, C, 0), R3=R-1, C3=C+1, V<>0, cell(R0, C0, V), trecelleadiacentidiags(R1, C1, R2, C2, R3, C3, V), not celleuguali(R0,C0, R1, C1), not celleuguali(R0,C0, R2, C2), not celleuguali(R0,C0, R3, C3), nquattrocelle(N), N=0, esistecell3(R1,C1,R2,C2,R3,C3,V), reachable(R0, C0, R, C), liberoSO(R,C).
 
 %+++++++++++++++++++GESTIONE QUATTRO CELLE++++++++++++++++++++++++++++++
 
