@@ -15,6 +15,7 @@ import java.util.Random;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import Atoms.Cell;
@@ -89,8 +90,27 @@ public class PanelGame extends JPanel {
 		add(scoreLabel, BorderLayout.CENTER);
 		add(next, BorderLayout.CENTER);
 
-		// INIT
+		reset();
 
+		handlerAI = new DesktopHandler(new DLV2DesktopService("lib/dlv2"));
+		InputProgram encoding = new ASPInputProgram();
+		encoding.addFilesPath("encodings/gamenew");
+		handlerAI.addProgram(encoding);
+
+		handlerPath = new DesktopHandler(new DLV2DesktopService("lib/dlv2"));
+		encoding = new ASPInputProgram();
+		encoding.addFilesPath("encodings/path");
+		handlerPath.addProgram(encoding);
+	}
+
+	private void reset() {
+		
+		for (int i = 0; i < cell.length; i++) 
+			for (int j = 0; j < cell.length; j++) {
+				cell[i][j]=0;
+				jcell[i][j].setIcon(null);
+			}
+		
 		random = new Random();
 
 		for (int init = 0, x, y, c; init < 5; init++) { // piazzo le prime 5 palline
@@ -112,16 +132,6 @@ public class PanelGame extends JPanel {
 		chooseWhereSpawnBalls(); // scelgo dove spawneranno le prossime 3 palline
 
 		fase = false;
-
-		handlerAI = new DesktopHandler(new DLV2DesktopService("lib/dlv2"));
-		InputProgram encoding = new ASPInputProgram();
-		encoding.addFilesPath("encodings/gamenew");
-		handlerAI.addProgram(encoding);
-
-		handlerPath = new DesktopHandler(new DLV2DesktopService("lib/dlv2"));
-		encoding = new ASPInputProgram();
-		encoding.addFilesPath("encodings/path");
-		handlerPath.addProgram(encoding);
 	}
 
 	private void next() {
@@ -157,10 +167,26 @@ public class PanelGame extends JPanel {
 
 			AnswerSets sets = (AnswerSets) handlerAI.startSync();
 			handlerAI.removeProgram(factsAI);
-
+			
 			if (sets.getAnswersets().size() == 0) {
-				System.out.println("ZEROAI");
-				System.out.println(sets.getErrors());
+//				System.out.println("ZEROAI");
+//				System.out.println(sets.getErrors());
+				
+				Object[] options = {"Yes","No"};
+				
+				int n = JOptionPane.showOptionDialog(this.getParent(),
+					    "<html><body><div width='200px' align='center'>GAME OVER<br>"
+					    + "Scores : "+scores+"<br>Retry?</div></body></html>",
+					    "BallLines",
+					    JOptionPane.YES_NO_OPTION,
+					    JOptionPane.PLAIN_MESSAGE,
+					    null,
+					    options, options[0]);
+				
+				if(n==1)
+					System.exit(0);
+				else 
+					reset();
 				return;
 			}
 
@@ -244,13 +270,13 @@ public class PanelGame extends JPanel {
 						 * path.removeAll(path); i = 0; x = start.getX(); y = start.getY();
 						 */
 						System.out.println("CRASH");
-						for (Used u : used)
-							System.out.println(u);
+//						for (Used u : used)
+//							System.out.println(u);
 						return;
 					}
 					path.add(new Path(i, x, y));
 					used.remove(new Used(x, y));
-					System.out.println(path.get(path.size() - 1));
+//					System.out.println(path.get(path.size() - 1));
 					// Thread.sleep(100);
 				}
 
