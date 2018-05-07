@@ -98,7 +98,7 @@ spostamentook2(R0, C0, R, C, V) :- cell(R, C1, V), cell(R, C2, V), cell(R, C, 0)
 
 spostamentook2(R0, C0, R, C, V) :- cell(R, C1, V), cell(R, C2, V), cell(R, C, 0), C2=C-1, V<>0, cell(R0, C0, V), duecelleadiacentiorizz(R, C1, C2, V), not celleuguali(R0,C0, R, C1), not celleuguali(R0,C0, R, C2), ntrecelle(N), nquattrocelle(N), N=0, esistecell2(R,C1,R,C2,V), reachable(R0, C0, R, C), liberoE(R,C), liberoO(R,C1).
 
-spostamentook2(R0, C0, R, C, V) :- cell(R, C1, V), cell(R, C2, V), cell(R, C, 0), C2=C-1, V<>0, cell(R0, C0, V), duecelleadiacentiorizz(R, C1, C2, V), not celleuguali(R0,C0, R, C1), not celleuguali(R0,C0, R, C2), ntrecelle(N), nquattrocelle(N), N=0, esistecell2(R,C1,R,C2,V), reachable(R0, C0, R, C), liberoE(R,C), cell(R,C3,_), C3=C+1.
+spostamentook2(R0, C0, R, C, V) :- cell(R, C1, V), cell(R, C2, V), cell(R, C, 0), C2=C-1, V<>0, cell(R0, C0, V), duecelleadiacentiorizz(R, C1, C2, V), not celleuguali(R0,C0, R, C1), not celleuguali(R0,C0, R, C2), ntrecelle(N), nquattrocelle(N), N=0, esistecell2(R,C1,R,C2,V), reachable(R0, C0, R, C), liberoE(R,C), cell(R,C3,_), C3=C+1, liberoE(R,C3).
 
 
 spostamentook2(R0, C0, R, C, V) :- cell(R, C1, V), cell(R, C2, V), cell(R, C, 0), C2=C-1, V<>0, cell(R0, C0, V), duecelleadiacentiorizz(R, C1, C2, V), not celleuguali(R0,C0, R, C1), not celleuguali(R0,C0, R, C2), ntrecelle(N), nquattrocelle(N), N=0, esistecell2(R,C1,R,C2,V), reachable(R0, C0, R, C), liberoO(R,C1), cell(R,C3,_), C3=C1-1, liberoO(R,C3).
