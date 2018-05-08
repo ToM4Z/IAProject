@@ -48,6 +48,7 @@ public class PanelGame extends JPanel {
 	private End end = null;
 	private JLabel scoreLabel;
 	private int scores = 0;
+	private boolean isDoing = false;
 
 	private static Handler handlerAI, handlerPath;
 
@@ -135,6 +136,12 @@ public class PanelGame extends JPanel {
 	}
 
 	private void next() {
+		if(isDoing)
+			return;
+		else
+			isDoing = true;
+		
+		
 		fase = !fase;
 
 		if (fase) {
@@ -169,8 +176,6 @@ public class PanelGame extends JPanel {
 			handlerAI.removeProgram(factsAI);
 			
 			if (sets.getAnswersets().size() == 0) {
-//				System.out.println("ZEROAI");
-//				System.out.println(sets.getErrors());
 				
 				Object[] options = {"Yes","No"};
 				
@@ -380,10 +385,14 @@ public class PanelGame extends JPanel {
 				scoreLabel.setText("Scores " + (++scores));
 
 				for (Star s : stars)
-					if (end.getX() == s.getX() && end.getY() == s.getY())
+					if (end.getX() == s.getX() && end.getY() == s.getY()) {
 						stars.remove(s);
+						break;
+					}
 			}
 		}
+		repaint();
+		isDoing = false;
 	}
 
 	private boolean FilaCompletata() {
