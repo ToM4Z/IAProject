@@ -1,27 +1,31 @@
 
-start(6,8).
-end(2,8).
+adj(X,Y,X,Y1):-cell(X,Y,_), cell(X,Y1,_), Y1=Y+1.
+adj(X,Y,X1,Y):-cell(X,Y,_), cell(X1,Y,_), X1=X+1.
+adj(X,Y,X1,Y1):-adj(X1,Y1,X,Y).
 
-adj(X,Y,X,Y1):-cell(X,Y,_), cell(X,Y1,0), Y1=Y+1.
-adj(X,Y,X1,Y):-cell(X,Y,_), cell(X1,Y,0), X1=X+1.
-adj(X,Y,X,Y1):-cell(X,Y,_), cell(X,Y1,0), Y1=Y-1.
-adj(X,Y,X1,Y):-cell(X,Y,_), cell(X1,Y,0), X1=X-1.
+%adj(X,Y,X,Y1):-cell(X,Y,_), cell(X,Y1,_), Y1=Y-1.
+%adj(X,Y,X1,Y):-cell(X,Y,_), cell(X1,Y,_), X1=X-1.
+
+start(0,0).
+end(8,8).
+%inPath(X,Y,X1,Y1) | outPath(X,Y,X1,Y1) :- edge(X,Y,X1,Y1).
+
+da fare con cammino hamiltoniano
 
 used(X,Y) :- start(X,Y).
-used(X,Y) | notUsed(X,Y) :- cell(X,Y,0).
+used(X,Y) | notUsed(X,Y) :- used(X1,Y1), adj(X1,Y1,X,Y), cell(X,Y,0).
 
 :~ used(X,Y). [1@1]
 
-reachable(X,Y,X1,Y1):-used(X,Y), used(X1,Y1), adj(X,Y,X1,Y1).
+reachable(X,Y,X1,Y1):- used(X,Y), used(X1,Y1), adj(X,Y,X1,Y1).
 reachable(X,Y,X2,Y2):- reachable(X,Y,X1,Y1), adj(X1,Y1,X2,Y2), used(X2,Y2).
 
-:- used(X,Y), #count{X1,Y1: used(X1,Y1), adj(X,Y,X1,Y1)}>2.
-:- used(X,Y), #count{X1,Y1: used(X1,Y1), adj(X,Y,X1,Y1)}=0.
+isReachable :- start(XS,YS), end(XE,YE), reachable(XS,YS,XE,YE).
+:- not isReachable.
 
-isReachable(1) :- start(XS,YS), end(XE,YE), XE<10, reachable(XS,YS,XE,YE).
-:- not isReachable(1).
 
 used(A,B)?
+%giveUsed(X,Y) :- used(X,Y).
 
 cell(0,0,0).
 cell(1,0,0).
@@ -74,7 +78,7 @@ cell(2,5,0).
 cell(3,5,0).
 cell(4,5,0).
 cell(5,5,0).
-cell(6,5,4).
+cell(6,5,0).
 cell(7,5,0).
 cell(8,5,0).
 cell(0,6,0).
@@ -82,7 +86,7 @@ cell(1,6,0).
 cell(2,6,0).
 cell(3,6,0).
 cell(4,6,0).
-cell(5,6,5).
+cell(5,6,0).
 cell(6,6,0).
 cell(7,6,0).
 cell(8,6,0).
@@ -95,12 +99,12 @@ cell(5,7,0).
 cell(6,7,0).
 cell(7,7,0).
 cell(8,7,0).
-cell(0,8,2).
-cell(1,8,6).
+cell(0,8,0).
+cell(1,8,0).
 cell(2,8,0).
 cell(3,8,0).
 cell(4,8,0).
 cell(5,8,0).
-cell(6,8,6).
+cell(6,8,0).
 cell(7,8,0).
 cell(8,8,0).
