@@ -3,12 +3,20 @@
 
 % adj dice se una cella è adiacente ad un'altra senza tenere conto delle palline
 % PS si dovrebbe calcolare una volta sola e poi passarli come fatti 
-adj(R, C, R1, C) :- cell(R, C, _), cell(R1, C, _), R1 = R+1.
-adj(R, C, R, C1) :- cell(R, C, _), cell(R, C1, _), C1 = C+1.
-adj(R, C, R1, C1) :- adj(R1, C1, R, C).
+adj(R, C, R1, C, v) :- cell(R, C, _), cell(R1, C, _), R1 = R+1.
+adj(R, C, R, C1, o) :- cell(R, C, _), cell(R, C1, _), C1 = C+1.
+adj(R, C, R1, C1, D) :- adj(R1, C1, R, C, D).
 
-adjDiagP(R, C, R1, C1) :- cell(R, C, _), cell(R1, C1, _), R1=R+1, C1=C+1.
-adjDiagS(R, C, R1, C1) :- cell(R, C, _), cell(R1, C1, _), R1=R+1, C1=C-1.
+adjDP(R, C, R1, C1) :- cell(R, C, _), cell(R1, C1, _), R1=R+1, C1=C+1.
+adjDS(R, C, R1, C1) :- cell(R, C, _), cell(R1, C1, _), R1=R+1, C1=C-1.
+
+adjAllDir(R, C, R1, C1, D) :- adj(R, C, R1, C1, D).
+adjAllDir(R, C, R1, C1, dp) :- adjDP(R, C, R1, C1).
+adjAllDir(R, C, R1, C1, dp) :- adjDP(R1, C1, R, C).
+adjAllDir(R, C, R1, C1, ds) :- adjDS(R, C, R1, C1).
+adjAllDir(R, C, R1, C1, ds) :- adjDS(R1, C1, R, C).
+
+celleUguali(R, C, R, C) :- cell(R, C, _).
 
 % con ball indico la cella in cui c'è una pallina
 ball(R, C, V) :- cell(R, C, V), V<>0.
@@ -16,174 +24,257 @@ ball(R, C, V) :- cell(R, C, V), V<>0.
 % con empty indico le celle vuote
 empty(R, C) :- cell(R, C, 0).
 
-% reachable dice se una cella VUOTA può raggiungere un'altra cella VUOTA
-reachable(R, C, R1, C1) :- adj(R, C, R1, C1), empty(R, C), empty(R1, C1).
-reachable(R, C, R1, C1) :- reachable(R, C, R2, C2), adj(R2, C2, R1, C1), empty(R1, C1). 
+% reachable dice se una cella VUOTA può raggiungere un'altra cella VUOTA (anche se stessa)
+reachable(R, C, R, C) :- empty(R, C).
+reachable(R, C, R1, C1) :- adj(R, C, R1, C1, _), empty(R, C), empty(R1, C1).
+reachable(R, C, R1, C1) :- reachable(R, C, R2, C2), adj(R2, C2, R1, C1, _), empty(R1, C1). 
 
-% free dice se di fianco una cella c'è uno spazio libero
-free(R, C, n) :- cell(R, C, _), empty(R1, C), R1=R-1.
-free(R, C, s) :- cell(R, C, _), empty(R1, C), R1=R+1.
-free(R, C, e) :- cell(R, C, _), empty(R, C1), C1=C+1.
-free(R, C, o) :- cell(R, C, _), empty(R, C1), C1=C-1.
-free(R, C, ne) :- cell(R, C, _), empty(R1, C1), R1=R-1, C1=C+1.
-free(R, C, no) :- cell(R, C, _), empty(R1, C1), R1=R-1, C1=C-1.
-free(R, C, se) :- cell(R, C, _), empty(R1, C1), R1=R+1, C1=C+1.
-free(R, C, so) :- cell(R, C, _), empty(R1, C1), R1=R+1, C1=C-1.
+
+% accept dice se una cella può andare bene per formare un fila
+color(1..4).
+starr(R,C) :- star(R,C,_).
+accept(R, C, V) :- ball(R, C, V).
+accept(R, C, V) :- star(R, C, V).
+accept(R, C, V) :- empty(R, C), not starr(R, C), color(V).
 
 %-----------------TROVO LE FILE DA SOLO 2 PALLINE-----------------
 
-dueOrizz(R, C1, C2, V) :- ball(R, C1, V), ball(R, C2, V), adj(R, C1, R, C2), C2>C1, 
-	not faParteDiTre(R, C2), not faParteDiQuattro(R, C2).
-
-dueVert(R1, R2, C, V) :- ball(R1, C, V), ball(R2, C, V), adj(R1, C, R2, C), R2>R1, 
-	not faParteDiTre(R2, C), not faParteDiQuattro(R2, C).
-
-dueDiagP(R1, C1, R2, C2, V) :- ball(R1, C1, V), ball(R2, C2, V), adjDiagP(R1, C1, R2, C2), 
+filaDue(R1, C1, R2, C2, V, D) :- ball(R1, C1, V), ball(R2, C2, V), adj(R1, C1, R2, C2, D), C2>=C1, R2>=R1,
 	not faParteDiTre(R2, C2), not faParteDiQuattro(R2, C2).
 
-dueDiagS(R1, C1, R2, C2, V) :- ball(R1, C1, V), ball(R2, C2, V), adjDiagS(R1, C1, R2, C2), 
+filaDue(R1, C1, R2, C2, V, dp) :- ball(R1, C1, V), ball(R2, C2, V), adjDP(R1, C1, R2, C2), 
 	not faParteDiTre(R2, C2), not faParteDiQuattro(R2, C2).
 
-filaDue(R, C1, R, C2, V) :- dueOrizz(R, C1, C2, V).
-filaDue(R1, C, R2, C, V) :- dueVert(R1, R2, C, V).
-filaDue(R1, C1, R2, C2, V) :- dueDiagP(R1, C1, R2, C2, V).
-filaDue(R1, C1, R2, C2, V) :- dueDiagS(R1, C1, R2, C2, V).
+filaDue(R1, C1, R2, C2, V, ds) :- ball(R1, C1, V), ball(R2, C2, V), adjDS(R1, C1, R2, C2), 
+	not faParteDiTre(R2, C2), not faParteDiQuattro(R2, C2).
 
-faParteDiDue(R, C) :- filaDue(R, C, R2, C2, V).
-faParteDiDue(R, C) :- filaDue(R1, C1, R, C, V).
+faParteDiDue(R, C) :- filaDue(R, C, R2, C2, V, _).
+faParteDiDue(R, C) :- filaDue(R1, C1, R, C, V, _).
 
-numFilaDue(N) :- N=#count{R1, C1, R2, C2, V: filaDue(R1, C1, R2, C2, V)}.
+faParteStessaFila(R, C, R1, C1, D) :- filaDue(R, C, R1, C1, _, D).
+
+numFilaDue(N) :- N=#count{R1, C1, R2, C2, V, D: filaDue(R1, C1, R2, C2, V, D)}.
 
 %-----------------TROVO LE FILE DA SOLO 3 PALLINE-----------------
 
-treOrizz(R, C1, C2, C3, V) :- ball(R, C1, V), ball(R, C2, V), ball(R, C3, V), adj(R, C1, R, C2), adj(R, C2, R, C3), 
-	C3>C2, C2>C1, not faParteDiQuattro(R, C2).
+filaTre(R1, C1, R2, C2, R3, C3, V, D) :- ball(R1, C1, V), ball(R2, C2, V), ball(R3, C3, V), adj(R, C1, R, C2, D), adj(R, C2, R, C3, D), 
+	C3>=C2, C2>=C1, R3>=R2, R2>R1, not faParteDiQuattro(R2, C2).
 
-treVert(R1, R2, R3, C, V) :- ball(R1, C, V), ball(R2, C, V), ball(R3, C, V), adj(R1, C, R2, C), adj(R2, C, R3, C),
-	R3>R2, R2>R1, not faParteDiQuattro(R2, C).
+filaTre(R1, C1, R2, C2, R3, C3, V, dp) :- ball(R1, C1, V), ball(R2, C2, V), ball(R3, C3, V), adjDP(R1,C1,R2,C2), 
+	adjDP(R2,C2,R3,C3), not faParteDiQuattro(R2, C2).
 
-treDiagP(R1, C1, R2, C2, R3, C3, V) :- ball(R1, C1, V), ball(R2, C2, V), ball(R3, C3, V), adjDiagP(R1,C1,R2,C2), 
-	adjDiagP(R2,C2,R3,C3), not faParteDiQuattro(R2, C2).
+filaTre(R1, C1, R2, C2, R3, C3, V, ds) :- ball(R1, C1, V), ball(R2, C2, V), ball(R3, C3, V), adjDS(R1,C1,R2,C2), 
+	adjDS(R2,C2,R3,C3), not faParteDiQuattro(R2, C2).
 
-treDiagS(R1, C1, R2, C2, R3, C3, V) :- ball(R1, C1, V), ball(R2, C2, V), ball(R3, C3, V), adjDiagS(R1,C1,R2,C2), 
-	adjDiagS(R2,C2,R3,C3), not faParteDiQuattro(R2, C2).
+faParteDiTre(R, C) :- filaTre(R, C, R2, C2, R3, C3, _, _).
+faParteDiTre(R, C) :- filaTre(R1, C1, R, C, R3, C3, _, _).
+faParteDiTre(R, C) :- filaTre(R1, C1, R2, C2, R, C, _, _).
 
-filaTre(R, C1, R, C2, R, C3, V) :- treOrizz(R, C1, C2, C3, V).
-filaTre(R1, C, R2, C, R3, C, V) :- treVert(R1, R2, R3, C, V).
-filaTre(R1, C1, R2, C2, R3, C3, V) :- treDiagP(R1, C1, R2, C2, R3, C3, V).
-filaTre(R1, C1, R2, C2, R3, C3, V) :- treDiagS(R1, C1, R2, C2, R3, C3, V).
+faParteStessaFila(R, C, R1, C1, D) :- filaTre(R, C, R1, C1, _, _, _, D).
+faParteStessaFila(R, C, R1, C1, D) :- filaTre(_, _, R, C, R1, C1, _, D).
+faParteStessaFila(R, C, R1, C1, D) :- filaTre(R, C, _, _, R1, C1, _, D).
 
-faParteDiTre(R, C) :- filaTre(R, C, R2, C2, R3, C3, V).
-faParteDiTre(R, C) :- filaTre(R1, C1, R, C, R3, C3, V).
-faParteDiTre(R, C) :- filaTre(R1, C1, R2, C2, R, C, V).
-
-numFilaTre(N) :- N=#count{R1, C1, R2, C2, R3, C3, V: filaTre(R1, C1, R2, C2, R3, C3, V)}.
+numFilaTre(N) :- N=#count{R1, C1, R2, C2, R3, C3, V, D: filaTre(R1, C1, R2, C2, R3, C3, V, D)}.
 
 %-----------------TROVO LE FILE DA SOLO 4 PALLINE-----------------
 
-quattroOrizz(R, C1, C2, C3, C4, V) :- ball(R, C1, V), ball(R, C2, V), ball(R, C3, V), ball(R, C4, V), 
-	adj(R, C1, R, C2), adj(R, C2, R, C3), adj(R, C3, R, C4), C4>C3, C3>C2, C2>C1.
+filaQuattro(R1, C1, R2, C2, R3, C3, R4, C4, V, D) :- ball(R1, C1, V), ball(R2, C2, V), ball(R3, C3, V), ball(R4, C4, V), 
+	adj(R1, C1, R2, C2, D), adj(R2, C2, R3, C3, D), adj(R3, C3, R4, C4, D), C4>=C3, C3>=C2, C2>=C1, R4>=R3, R3>=R2, R2>=R1.
 
-quattroVert(R1, R2, R3, R4, C, V) :- ball(R1, C, V), ball(R2, C, V), ball(R3, C, V), ball(R4, C, V), 
-	adj(R1, C, R2, C), adj(R2, C, R3, C), adj(R3, C, R4, C), R4>R3, R3>R2, R2>R1.
+filaQuattro(R1, C1, R2, C2, R3, C3, R4, C4, V, dp) :- ball(R1, C1, V), ball(R2, C2, V), ball(R3, C3, V), ball(R4, C4, V), 
+	adjDP(R1,C1,R2,C2), adjDP(R2,C2,R3,C3), adjDP(R3,C3,R4,C4).
 
-quattroDiagP(R1, C1, R2, C2, R3, C3, R4, C4, V) :- ball(R1, C1, V), ball(R2, C2, V), ball(R3, C3, V), ball(R4, C4, V), 
-	adjDiagP(R1,C1,R2,C2), adjDiagP(R2,C2,R3,C3), adjDiagP(R3,C3,R4,C4).
+filaQuattro(R1, C1, R2, C2, R3, C3, R4, C4, V, ds) :- ball(R1, C1, V), ball(R2, C2, V), ball(R3, C3, V), ball(R4, C4, V), 
+	adjDS(R1,C1,R2,C2), adjDS(R2,C2,R3,C3), adjDS(R3,C3,R4,C4).
 
-quattroDiagS(R1, C1, R2, C2, R3, C3, R4, C4, V) :- ball(R1, C1, V), ball(R2, C2, V), ball(R3, C3, V), ball(R4, C4, V), 
-	adjDiagS(R1,C1,R2,C2), adjDiagS(R2,C2,R3,C3), adjDiagS(R3,C3,R4,C4).
+faParteDiQuattro(R, C) :- filaQuattro(R, C, R2, C2, R3, C3, R4, C4, _, _).
+faParteDiQuattro(R, C) :- filaQuattro(R1, C1, R, C, R3, C3, R4, C4, _, _).
+faParteDiQuattro(R, C) :- filaQuattro(R1, C1, R2, C2, R, C, R4, C4, _, _).
+faParteDiQuattro(R, C) :- filaQuattro(R1, C1, R2, C2, R3, C3, R, C, _, _).
 
-fileQuattro(R, C1, R, C2, R, C3, R, C4, V) :- quattroOrizz(R, C1, C2, C3, C4, V).
-fileQuattro(R1, C, R2, C, R3, C, R4, C, V) :- quattroVert(R1, R2, R3, R4, C, V).
-fileQuattro(R1, C1, R2, C2, R3, C3, R4, C4, V) :- quattroDiagP(R1, C1, R2, C2, R3, C3, R4, C4, V).
-fileQuattro(R1, C1, R2, C2, R3, C3, R4, C4, V) :- quattroDiagS(R1, C1, R2, C2, R3, C3, R4, C4, V).
+faParteStessaFila(R, C, R1, C1, D) :- filaQuattro(R, C, R1, C1, _, _, _, _, _, D).
+faParteStessaFila(R, C, R1, C1, D) :- filaQuattro(R, C, _, _, R1, C1, _, _, _, D).
+faParteStessaFila(R, C, R1, C1, D) :- filaQuattro(R, C, _, _, _, _, R1, C1, _, D).
+faParteStessaFila(R, C, R1, C1, D) :- filaQuattro(_, _, R, C, R1, C1, _, _, _, D).
+faParteStessaFila(R, C, R1, C1, D) :- filaQuattro(_, _, R, C, _, _, R1, C1, _, D).
+faParteStessaFila(R, C, R1, C1, D) :- filaQuattro(_, _, _, _, R, C, R1, C1, _, D).
 
-faParteDiQuattro(R, C) :- fileQuattro(R, C, R2, C2, R3, C3, R4, C4, V).
-faParteDiQuattro(R, C) :- fileQuattro(R1, C1, R, C, R3, C3, R4, C4, V).
-faParteDiQuattro(R, C) :- fileQuattro(R1, C1, R2, C2, R, C, R4, C4, V).
-faParteDiQuattro(R, C) :- fileQuattro(R1, C1, R2, C2, R3, C3, R, C, V).
+faParteStessaFila(R, C, R1, C1, D) :- faParteStessaFila(R1, C1, R, C, D).
 
-numFilaQuattro(N) :- N=#count{R1, C1, R2, C2, R3, C3, R4, C4, V: fileQuattro(R1, C1, R2, C2, R3, C3, R4, C4, V)}.
+numFilaQuattro(N) :- N=#count{R1, C1, R2, C2, R3, C3, R4, C4, V, D: filaQuattro(R1, C1, R2, C2, R3, C3, R4, C4, V, D)}.
+
 %-------------------GUESS------------------
 
-%move(R, C, R1, C1, V) | notMove(R, C, R1, C1, V) :- cell(R, C, V), cell(R1, C1, 0), V<>0. 
+% move sposta una ball in una cella vuota accessibile vicina ad un'altra ball
+
+move(R, C, R1, C1, V, D) | notMove(R, C, R1, C1, V, D) :- ball(R, C, V), ball(R2, C2, V), not celleUguali(R,C,R2,C2), 
+	not faParteStessaFila(R,C,R2,C2, D), adjAllDir(R2,C2,R1,C1,D), empty(R1, C1), empty(RP,CP), adj(R,C,RP,CP,_), reachable(RP,CP,R1,C1).
+
+% ho un solo move per AS
+:- #count{R, C, R1, C1, V, D: move(R, C, R1, C1, V, D)}<>1.
+
+%---------------WEAK COSTRAINTS
+
+% se smonto un'altra fila pago
+:~ move(R, C, R1, C1, V, D), faParteDiDue(R, C). [1@2]
+:~ move(R, C, R1, C1, V, D), faParteDiTre(R, C). [1@3]
+:~ move(R, C, R1, C1, V, D), faParteDiQuattro(R, C). [1@4]
+
+% se copro una stella pago
+:~ move(R, C, R1, C1, V, D), star(R1, C1, V). [1@5]
+
+% preferisco formare le file più grandi possibili
+:~ not creoFilaDaTre, not creoFilaDaQuattro, not creoFilaDaCinque. [1@9]	% fila da 2
+:~ creoFilaDaTre, not creoFilaDaQuattro, not creoFilaDaCinque. [1@8]		% fila da 3
+:~ not creoFilaDaTre, creoFilaDaQuattro, not creoFilaDaCinque. [1@7]		% fila da 4
+:~ not creoFilaDaTre, not creoFilaDaQuattro, creoFilaDaCinque. [1@6]		% fila da 5
+
+% preferisco unire due palline tramite quella che sposto
+:~ move(R,C,R1,C1,V,D), adjAllDir(R1,C1,R2,C2,D), adjAllDir(R1,C1,R3,C3,D), not celleUguali(R2,C2,R3,C3), not ball(R2,C2,V), ball(R3,C3,V). [2@1]
+:~ move(R,C,R1,C1,V,D), adjAllDir(R1,C1,R2,C2,D), adjAllDir(R1,C1,R3,C3,D), not celleUguali(R2,C2,R3,C3), ball(R2,C2,V), not ball(R3,C3,V). [2@1]
+:~ move(R,C,R1,C1,V,D), adjAllDir(R1,C1,R2,C2,D), adjAllDir(R1,C1,R3,C3,D), not celleUguali(R2,C2,R3,C3), ball(R2,C2,V), ball(R3,C3,V). [1@1] 
 
 %-------------------CONSTRAINTS-------------
 
+% controllo che c'è spazio per una fila di 5
+% orizzontale
+moveOk(R, C, R1, C1, V, o) :- move(R,C,R1,C1,V,o), accept(R1,C1+1,V), accept(R1,C1+2,V), accept(R1,C1+3,V), accept(R1,C1+4,V).
+moveOk(R, C, R1, C1, V, o) :- accept(R1,C1-1,V), move(R,C,R1,C1,V,o), accept(R1,C1+1,V), accept(R1,C1+2,V), accept(R1,C1+3,V).
+moveOk(R, C, R1, C1, V, o) :- accept(R1,C1-2,V), accept(R1,C1-1,V), move(R,C,R1,C1,V,o), accept(R1,C1+1,V), accept(R1,C1+2,V).
+moveOk(R, C, R1, C1, V, o) :- accept(R1,C1-3,V), accept(R1,C1-2,V), accept(R1,C1-1,V), move(R,C,R1,C1,V,o), accept(R1,C1+1,V).
+moveOk(R, C, R1, C1, V, o) :- accept(R1,C1-4,V), accept(R1,C1-3,V), accept(R1,C1-2,V), accept(R1,C1-1,V), move(R,C,R1,C1,V,o).
 
-%numFilaDue(N)?
-numFilaTre(N)?
-%numFilaQuattro(N)?
+% verticale
+moveOk(R, C, R1, C1, V, v) :- move(R,C,R1,C1,V,v), accept(R1+1,C1,V), accept(R1+2,C1,V), accept(R1+3,C1,V), accept(R1+4,C1,V).
+moveOk(R, C, R1, C1, V, v) :- accept(R1-1,C1,V), move(R,C,R1,C1,V,v), accept(R1+1,C1,V), accept(R1+2,C1,V), accept(R1+3,C1,V).
+moveOk(R, C, R1, C1, V, v) :- accept(R1-2,C1,V), accept(R1-1,C1,V), move(R,C,R1,C1,V,v), accept(R1+1,C1,V), accept(R1+2,C1,V).
+moveOk(R, C, R1, C1, V, v) :- accept(R1-3,C1,V), accept(R1-2,C1,V), accept(R1-1,C1,V), move(R,C,R1,C1,V,v), accept(R1+1,C1,V).
+moveOk(R, C, R1, C1, V, v) :- accept(R1-4,C1,V), accept(R1-3,C1,V), accept(R1-2,C1,V), accept(R1-1,C1,V), move(R,C,R1,C1,V,v).
 
+% diagonale P
+moveOk(R, C, R1, C1, V, dp) :- move(R,C,R1,C1,V,dp), accept(R1+1,C1+1,V), accept(R1+2,C1+2,V), accept(R1+3,C1+3,V), accept(R1+4,C1+4,V).
+moveOk(R, C, R1, C1, V, dp) :- accept(R1-1,C1-1,V), move(R,C,R1,C1,V,dp), accept(R1+1,C1+1,V), accept(R1+2,C1+2,V), accept(R1+3,C1+3,V).
+moveOk(R, C, R1, C1, V, dp) :- accept(R1-2,C1-2,V), accept(R1-1,C1-1,V), move(R,C,R1,C1,V,dp), accept(R1+1,C1+1,V), accept(R1+2,C1+2,V).
+moveOk(R, C, R1, C1, V, dp) :- accept(R1-3,C1-3,V), accept(R1-2,C1-2,V), accept(R1-1,C1-1,V), move(R,C,R1,C1,V,dp), accept(R1+1,C1+1,V).
+moveOk(R, C, R1, C1, V, dp) :- accept(R1-4,C1-4,V), accept(R1-3,C1-3,V), accept(R1-2,C1-2,V), accept(R1-1,C1-1,V), move(R,C,R1,C1,V,dp).
 
+% diagonale S
+moveOk(R, C, R1, C1, V, ds) :- move(R,C,R1,C1,V,ds), accept(R1+1,C1-1,V), accept(R1+2,C1-2,V), accept(R1+3,C1-3,V), accept(R1+4,C1-4,V).
+moveOk(R, C, R1, C1, V, ds) :- accept(R1-1,C1+1,V), move(R,C,R1,C1,V,ds), accept(R1+1,C1-1,V), accept(R1+2,C1-2,V), accept(R1+3,C1-3,V).
+moveOk(R, C, R1, C1, V, ds) :- accept(R1-2,C1+2,V), accept(R1-1,C1+1,V), move(R,C,R1,C1,V,ds), accept(R1+1,C1-1,V), accept(R1+2,C1-2,V).
+moveOk(R, C, R1, C1, V, ds) :- accept(R1-3,C1+3,V), accept(R1-2,C1+2,V), accept(R1-1,C1+1,V), move(R,C,R1,C1,V,ds), accept(R1+1,C1-1,V).
+moveOk(R, C, R1, C1, V, ds) :- accept(R1-4,C1+4,V), accept(R1-3,C1+3,V), accept(R1-2,C1+2,V), accept(R1-1,C1+1,V), move(R,C,R1,C1,V,ds).
+
+% non è possibile che uno spostamento non sia ok
+:- move(R, C, R1, C1, V, D), not moveOk(R, C, R1, C1, V, D).
+
+% Questi atomi indicano la fila che ho creato spostando la pallina
+% orizzontale
+creoFilaDaTre :- filaDue(R, C1, R, C2, V, o), move(_,_, R, C2+1, V, o).
+creoFilaDaTre :- filaDue(R, C1, R, C2, V, o), move(_,_, R, C1-1, V, o).
+creoFilaDaQuattro :- filaTre(R, C1, R, C2, R, C3, V, o), move(_,_, R, C3+1, V, o).
+creoFilaDaQuattro :- filaTre(R, C1, R, C2, R, C3, V, o), move(_,_, R, C1-1, V, o).
+creoFilaDaCinque :- filaQuattro(R, C1, R, C2, R, C3, R, C4, V, o), move(_,_, R, C4+1, V, o).
+creoFilaDaCinque :- filaQuattro(R, C1, R, C2, R, C3, R, C4, V, o), move(_,_, R, C1-1, V, o).
+
+% verticale
+creoFilaDaTre :- filaDue(R1, C, R2, C, V, v), move(_,_, R2+1, C, V, v).
+creoFilaDaTre :- filaDue(R1, C, R2, C, V, v), move(_,_, R1-1, C, V, v).
+creoFilaDaQuattro :- filaTre(R1, C, R2, C, R3, C, V, v), move(_,_, R3+1, C, V, v).
+creoFilaDaQuattro :- filaTre(R1, C, R2, C, R3, C, V, v), move(_,_, R1-1, C, V, v).
+creoFilaDaCinque :- filaQuattro(R1, C, R2, C, R3, C, R4, C, V, v), move(_,_, R4+1, C, V, v).
+creoFilaDaCinque :- filaQuattro(R1, C, R2, C, R3, C, R4, C, V, v), move(_,_, R1-1, C, V, v).
+
+% diagonale P
+creoFilaDaTre :- filaDue(R1, C1, R2, C2, V, dp), move(_,_, R2+1, C2+1, V, dp).
+creoFilaDaTre :- filaDue(R1, C1, R2, C2, V, dp), move(_,_, R1-1, C1-1, V, dp).
+creoFilaDaQuattro :- filaTre(R1, C1, R2, C2, R3, C3, V, dp), move(_,_, R3+1, C3+1, V, dp).
+creoFilaDaQuattro :- filaTre(R1, C1, R2, C2, R3, C3, V, dp), move(_,_, R1-1, C1-1, V, dp).
+creoFilaDaCinque :- filaQuattro(R1, C1, R2, C2, R3, C3, R4, C4, V, dp), move(_,_, R4+1, C4+1, V, dp).
+creoFilaDaCinque :- filaQuattro(R1, C1, R2, C2, R3, C3, R4, C4, V, dp), move(_,_, R1-1, C1-1, V, dp).
+
+% diagonale S
+creoFilaDaTre :- filaDue(R1, C1, R2, C2, V, ds), move(_,_, R2+1, C2-1, V, ds).
+creoFilaDaTre :- filaDue(R1, C1, R2, C2, V, ds), move(_,_, R1-1, C1+1, V, ds).
+creoFilaDaQuattro :- filaTre(R1, C1, R2, C2, R3, C3, V, ds), move(_,_, R3+1, C3-1, V, ds).
+creoFilaDaQuattro :- filaTre(R1, C1, R2, C2, R3, C3, V, ds), move(_,_, R1-1, C1+1, V, ds).
+creoFilaDaCinque :- filaQuattro(R1, C1, R2, C2, R3, C3, R4, C4, V, ds), move(_,_, R4+1, C4-1, V, ds).
+creoFilaDaCinque :- filaQuattro(R1, C1, R2, C2, R3, C3, R4, C4, V, ds), move(_,_, R1-1, C1+1, V, ds).
+
+%--------------------------PRINT
+
+%move(A,B,C,D,E,F)?
 
 
 cell(0,0,0).
-cell(1,0,0).
-cell(2,0,3).
-cell(3,0,2).
-cell(4,0,0).
-cell(5,0,4).
+cell(1,0,1).
+star(2,0,3).
+cell(2,0,0).
+cell(3,0,4).
+cell(4,0,3).
+cell(5,0,0).
 cell(6,0,0).
-cell(7,0,4).
-cell(8,0,2).
+cell(7,0,0).
+cell(8,0,0).
 cell(0,1,0).
-cell(1,1,3).
-cell(2,1,2).
+cell(1,1,1).
+cell(2,1,0).
 cell(3,1,0).
-cell(4,1,0).
+cell(4,1,3).
 cell(5,1,0).
 cell(6,1,0).
 cell(7,1,0).
 cell(8,1,0).
 cell(0,2,0).
 cell(1,2,0).
-cell(2,2,2).
+cell(2,2,1).
 cell(3,2,0).
-cell(4,2,0).
-cell(5,2,0).
+cell(4,2,3).
+cell(5,2,3).
 cell(6,2,0).
 cell(7,2,0).
-cell(8,2,4).
+cell(8,2,0).
 cell(0,3,0).
 cell(1,3,0).
-cell(2,3,3).
-cell(3,3,1).
+cell(2,3,0).
+cell(3,3,0).
+star(4,3,4).
 cell(4,3,0).
 cell(5,3,0).
 cell(6,3,0).
-cell(7,3,4).
-cell(8,3,3).
+cell(7,3,0).
+cell(8,3,0).
 cell(0,4,0).
 cell(1,4,0).
-cell(2,4,3).
+cell(2,4,0).
 cell(3,4,0).
 cell(4,4,0).
+star(5,4,3).
 cell(5,4,0).
 cell(6,4,0).
 cell(7,4,0).
 cell(8,4,0).
-cell(0,5,2).
-cell(1,5,0).
-cell(2,5,3).
-cell(3,5,4).
-cell(4,5,4).
-cell(5,5,2).
-cell(6,5,0).
-cell(7,5,1).
-cell(8,5,2).
+cell(0,5,4).
+cell(1,5,4).
+cell(2,5,4).
+cell(3,5,0).
+cell(4,5,0).
+cell(5,5,0).
+cell(6,5,2).
+cell(7,5,0).
+cell(8,5,1).
 cell(0,6,0).
-cell(1,6,3).
+cell(1,6,1).
 cell(2,6,0).
 cell(3,6,0).
 cell(4,6,0).
-cell(5,6,4).
-cell(6,6,0).
+cell(5,6,0).
+cell(6,6,3).
 cell(7,6,0).
 cell(8,6,0).
 cell(0,7,0).
 cell(1,7,0).
-cell(2,7,2).
+cell(2,7,0).
 cell(3,7,0).
 cell(4,7,0).
 cell(5,7,0).
@@ -192,10 +283,10 @@ cell(7,7,0).
 cell(8,7,0).
 cell(0,8,0).
 cell(1,8,0).
-cell(2,8,0).
+cell(2,8,2).
 cell(3,8,0).
-cell(4,8,0).
+cell(4,8,3).
 cell(5,8,0).
-cell(6,8,1).
-cell(7,8,0).
-cell(8,8,4).
+cell(6,8,0).
+cell(7,8,2).
+cell(8,8,0).

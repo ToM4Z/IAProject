@@ -18,13 +18,17 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
-import Atoms.Cell;
+import Atoms.Ball;
+import Atoms.CelleUguali;
+import Atoms.Empty;
 import Atoms.End;
 import Atoms.Path;
-import Atoms.Spostamento;
+import Atoms.Move;
 import Atoms.Star;
 import Atoms.Start;
 import Atoms.Used;
+import Atoms.adjAllDir;
+import Atoms.adjHalfDir;
 import it.unical.mat.embasp.base.Handler;
 import it.unical.mat.embasp.base.InputProgram;
 import it.unical.mat.embasp.languages.asp.ASPInputProgram;
@@ -36,6 +40,8 @@ import it.unical.mat.embasp.specializations.dlv2.desktop.DLV2DesktopService;
 public class PanelGame extends JPanel {
 	private static final long serialVersionUID = 1L;
 
+	private final InputProgram facts;
+
 	private JPanel griglia;
 	private int[][] cell; // [colonna][riga]
 	private JLabel[][] jcell;
@@ -44,104 +50,75 @@ public class PanelGame extends JPanel {
 	private boolean fase;
 	private List<Path> path;
 	private List<Star> stars;
+	private Move move = null;
 	private Start start = null;
 	private End end = null;
 	private JLabel scoreLabel;
 	private int scores = 0;
-	private boolean isDoing = false;
+	private boolean isDoing = false, createPath = false;
 
 	private static Handler handlerAI, handlerPath;
 
 	public PanelGame() {
 		factory = Items_Factory.getInstance();
 
-		griglia = new JPanel();
-		griglia.setPreferredSize(new Dimension(500, 500));
-		griglia.setLayout(new GridBagLayout());
-		GridBagConstraints g = new GridBagConstraints();
-
-		cell = new int[9][9];
-		jcell = new JLabel[9][9];
-
-		for (int i = 0; i < 9; ++i)
-			for (int j = 0; j < 9; ++j) {
-				cell[i][j] = 0;
-				g.gridx = i;
-				g.gridy = j;
-				griglia.add(jcell[i][j] = new JLabel(), g);
-				griglia.add(new JLabel(factory.getFloor()), g);
-			}
-
-		add(griglia, BorderLayout.NORTH);
-
-		JButton next = new JButton(factory.getNext());
-		next.setBorderPainted(false);
-		next.setContentAreaFilled(false);
-		next.setOpaque(true);
-
-		next.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				next();
-			}
-		});
-
-		scoreLabel = new JLabel("Scores 0");
-
-		add(scoreLabel, BorderLayout.CENTER);
-		add(next, BorderLayout.CENTER);
-
+		initUI();
 		reset();
+
+		facts = new ASPInputProgram();
 
 		handlerAI = new DesktopHandler(new DLV2DesktopService("lib/dlv2"));
 		InputProgram encoding = new ASPInputProgram();
-		encoding.addFilesPath("encodings/gamenew");
+		encoding.addFilesPath("encodings/First");
 		handlerAI.addProgram(encoding);
+
+		try {
+			InputProgram factsAI = new ASPInputProgram();
+
+			factsAI.addObjectInput(new CelleUguali());
+			factsAI.addObjectInput(new adjAllDir(10, 10, 10, 10, "s"));
+			factsAI.addObjectInput(new adjHalfDir(10, 10, 10, 10, "s"));
+
+			handlerAI.addProgram(factsAI);
+			AnswerSets sets = (AnswerSets) handlerAI.startSync();
+
+			for (Object obj : sets.getAnswersets().get(0).getAtoms())
+				if (obj instanceof adjAllDir) {
+					adjAllDir a = (adjAllDir) obj;
+					if (a.getR1() == 10)
+						continue;
+					facts.addObjectInput(a);
+				} else if (obj instanceof adjHalfDir) {
+					adjHalfDir a = (adjHalfDir) obj;
+					if (a.getR1() == 10)
+						continue;
+					facts.addObjectInput(a);
+				} else if (obj instanceof CelleUguali) {
+					facts.addObjectInput((CelleUguali) obj);
+				}
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+
+		handlerAI.removeAll();
+		encoding.clearFilesPaths();
+		encoding.addFilesPath("encodings/prova");
+		handlerAI.addProgram(encoding);
+		handlerAI.addProgram(facts);
 
 		handlerPath = new DesktopHandler(new DLV2DesktopService("lib/dlv2"));
 		encoding = new ASPInputProgram();
-		encoding.addFilesPath("encodings/path");
+		encoding.addFilesPath("encodings/path2");
 		handlerPath.addProgram(encoding);
+		handlerPath.addProgram(facts);
 	}
 
-	private void reset() {
-		
-		for (int i = 0; i < cell.length; i++) 
-			for (int j = 0; j < cell.length; j++) {
-				cell[i][j]=0;
-				jcell[i][j].setIcon(null);
-			}
-		
-		random = new Random();
-
-		for (int init = 0, x, y, c; init < 5; init++) { // piazzo le prime 5 palline
-			x = random.nextInt(9);
-			y = random.nextInt(9);
-			c = random.nextInt(4) + 1;
-
-			while (cell[x][y] != Color.nullo.getVal()) {
-				x = random.nextInt(9);
-				y = random.nextInt(9);
-			}
-
-			cell[x][y] = c;
-			jcell[x][y].setIcon(factory.getBall(c));
-
-		}
-
-		stars = new LinkedList<>();
-		chooseWhereSpawnBalls(); // scelgo dove spawneranno le prossime 3 palline
-
-		fase = false;
-	}
-
-	private void next() {
-		if(isDoing)
+	private void next() throws Exception {
+		if (isDoing)
 			return;
 		else
 			isDoing = true;
-		
-		
+
 		fase = !fase;
 
 		if (fase) {
@@ -152,91 +129,98 @@ public class PanelGame extends JPanel {
 
 			InputProgram factsAI = new ASPInputProgram();
 			InputProgram factsPath = new ASPInputProgram();
-			try {
-				for (int i = 0; i < cell.length; i++)
-					for (int j = 0; j < cell.length; j++) {
-						Cell x = new Cell(j, i, cell[i][j]);
 
-						if (x.getValue() > 10) {
-							factsAI.addObjectInput(new Star(j, i, x.getValue() - 10));
-							x.setValue(0);
-						}
+			factsAI.addObjectInput(new Move(10, 10, 10, 10, 10, "s"));
+
+			for (Star s : stars) {
+				System.out.println(s.toString());
+				factsAI.addObjectInput(s);
+			}
+
+			for (int i = 0; i < cell.length; i++)
+				for (int j = 0; j < cell.length; j++) {
+					if (cell[i][j] != 0) {
+						Ball x = new Ball(j, i, cell[i][j]);
+						factsAI.addObjectInput(x);
 						System.out.println(x.toString());
+					} else {
+						Empty x = new Empty(j, i);
 						factsAI.addObjectInput(x);
 						factsPath.addObjectInput(x);
+						System.out.println(x.toString());
 					}
-				factsAI.addObjectInput(new Spostamento(10, 10, 10, 10, 10));
-			} catch (Exception e1) {
-				e1.printStackTrace();
-			}
+				}
 
 			handlerAI.addProgram(factsAI);
 
 			AnswerSets sets = (AnswerSets) handlerAI.startSync();
 			handlerAI.removeProgram(factsAI);
-			
+			System.out.println(sets.getAnswerSetsString());
+
 			if (sets.getAnswersets().size() == 0) {
-				
-				Object[] options = {"Yes","No"};
-				
+				Object[] options = { "Yes", "No" };
 				int n = JOptionPane.showOptionDialog(this.getParent(),
-					    "<html><body><div width='200px' align='center'>GAME OVER<br>"
-					    + "Scores : "+scores+"<br>Retry?</div></body></html>",
-					    "BallLines",
-					    JOptionPane.YES_NO_OPTION,
-					    JOptionPane.PLAIN_MESSAGE,
-					    null,
-					    options, options[0]);
-				
-				if(n==1)
+						"<html><body><div width='200px' align='center'>GAME OVER<br>" + "Scores : " + scores
+								+ "<br>Retry?</div></body></html>",
+						"BallLines", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
+
+				if (n == 1)
 					System.exit(0);
-				else 
+				else
 					reset();
 				return;
 			}
 
-			try {
-				start = null;
-				end = null;
+			move = null;
 
-				for (Object obj : sets.getAnswersets().get(sets.getAnswersets().size() - 1).getAtoms()) {
+			for (Object obj : sets.getAnswersets().get(sets.getAnswersets().size() - 1).getAtoms()) {
 
-					if (obj instanceof Spostamento) {
-						Spostamento o = (Spostamento) obj;
-						if (o.getX1() == 10)
-							continue;
-						start = new Start(o.getX1(), o.getY1());
-						end = new End(o.getX2(), o.getY2());
-					}
+				if (obj instanceof Move) {
+					Move o = (Move) obj;
+					if (o.getX1() == 10)
+						continue;
+					move = o;
+					start = new Start(move.getX1(), move.getY1());
+					end = new End(move.getX2(), move.getY2());
+
+					System.out.println(move.toString());
+					System.out.println(start.toString());
+					System.out.println(end.toString());
+					break;
 				}
+			}
 
-				System.out.println(start);
-				System.out.println(end);
+			if (move == null) {
+				System.out.println("CRASH");
+				return;
+			}
+
+
+			jcell[start.getY()][start.getX()].setIcon(
+					combineImages(factory.getBall(cell[start.getY()][start.getX()]), factory.getSelected()));
+			jcell[end.getY()][end.getX()].setIcon(factory.getHere());
+			
+			if (createPath) {
 
 				factsPath.addObjectInput(start);
 				factsPath.addObjectInput(end);
 				factsPath.addObjectInput(new Used(10, 10));
 				handlerPath.addProgram(factsPath);
 
-			} catch (Exception e1) {
-				e1.printStackTrace();
-			}
+				sets = (AnswerSets) handlerPath.startSync();
+				handlerPath.removeProgram(factsPath);
+				System.out.println(sets.getAnswerSetsString());
 
-			sets = (AnswerSets) handlerPath.startSync();
-			handlerPath.removeProgram(factsPath);
+				if (sets.getAnswersets().size() == 0) {
+					System.out.println("ZEROPATH");
+					System.out.println(sets.getErrors());
+					return;
+				}
 
-			if (sets.getAnswersets().size() == 0) {
-				System.out.println("ZEROPATH");
-				System.out.println(sets.getErrors());
-				return;
-			}
+				AnswerSet s = sets.getAnswersets().get(sets.getAnswersets().size() - 1);
 
-			AnswerSet s = sets.getAnswersets().get(sets.getAnswersets().size() - 1);
-
-			List<Used> used = new LinkedList<>();
-			path = new LinkedList<>();
-
-			try {
+				List<Used> used = new LinkedList<>();
+				path = new LinkedList<>();
 
 				for (Object obj : s.getAtoms()) {
 					if (obj instanceof Used) {
@@ -250,9 +234,6 @@ public class PanelGame extends JPanel {
 
 				path.add(new Path(0, start.getX(), start.getY()));
 				used.remove(new Used(start.getX(), start.getY()));
-
-				jcell[start.getY()][start.getX()].setIcon(
-						combineImages(factory.getBall(cell[start.getY()][start.getX()]), factory.getSelected()));
 
 				for (int i = 1, x = start.getX(), y = start.getY(); x != end.getX() || y != end.getY(); ++i) {
 					boolean pass = false;
@@ -271,18 +252,19 @@ public class PanelGame extends JPanel {
 						pass = true;
 					}
 					if (!pass) {
-						/*
-						 * path.removeAll(path); i = 0; x = start.getX(); y = start.getY();
-						 */
+
+						path.removeAll(path);
+						i = 0;
+						x = start.getX();
+						y = start.getY();
+
 						System.out.println("CRASH");
-//						for (Used u : used)
-//							System.out.println(u);
+						for (Used u : used)
+							System.out.println(u);
 						return;
 					}
 					path.add(new Path(i, x, y));
 					used.remove(new Used(x, y));
-//					System.out.println(path.get(path.size() - 1));
-					// Thread.sleep(100);
 				}
 
 				for (int i = 1; i < path.size() - 1; ++i) {
@@ -334,19 +316,19 @@ public class PanelGame extends JPanel {
 						}
 					}
 
-					if (cell[now.getY()][now.getX()] > 10)
-						jcell[now.getY()][now.getX()]
-								.setIcon(combineImages(factory.getStar(cell[now.getY()][now.getX()] - 10), img));
-					else
+					boolean find = false;
+					for (Star st : stars)
+						if (st.getX() == now.getX() && st.getY() == now.getY()) {
+							find = true;
+							jcell[now.getY()][now.getX()].setIcon(combineImages(factory.getStar(st.getV()), img));
+						}
+					if (!find)
 						jcell[now.getY()][now.getX()].setIcon(img);
 
 				}
 				jcell[end.getY()][end.getX()].setIcon(factory.getHere());
-
-			} catch (Exception e) {
-				e.printStackTrace();
 			}
-
+			
 		} else {
 			System.out.println("Fase2");
 			// FASE 2
@@ -357,29 +339,33 @@ public class PanelGame extends JPanel {
 			// spawnate altre palline
 
 			// altrimenti spawno le palline e torno al rigo 64
-			for (Path p : path) {
-				jcell[p.getY()][p.getX()].setIcon(null);
-				for (Star s : stars)
-					if (s.getX() == p.getX() && s.getY() == p.getY())
-						jcell[s.getY()][s.getX()].setIcon(factory.getStar(s.getV()));
+			
+			if(createPath) {
+			
+				for (Path p : path) {
+					jcell[p.getY()][p.getX()].setIcon(null);
+					for (Star s : stars)
+						if (s.getX() == p.getX() && s.getY() == p.getY())
+							jcell[s.getY()][s.getX()].setIcon(factory.getStar(s.getV()));
+				}
+				path.clear();
 			}
-			path.clear();
 
 			cell[end.getY()][end.getX()] = cell[start.getY()][start.getX()];
 			cell[start.getY()][start.getX()] = 0;
 			jcell[end.getY()][end.getX()].setIcon(factory.getBall(cell[end.getY()][end.getX()]));
+			jcell[start.getY()][start.getX()].setIcon(null);
 
 			if (!FilaCompletata()) {
 				for (Star s : stars) {
 					if (end.getX() == s.getX() && end.getY() == s.getY())
 						continue;
-					cell[s.getY()][s.getX()] = s.getV();
-					jcell[s.getY()][s.getX()].setIcon(factory.getBall(s.getV()));
+					setCell(s.getY(), s.getX(), s.getV());
 				}
 				stars.clear();
 
 				FilaCompletata();
-				
+
 				chooseWhereSpawnBalls();
 			} else {
 				scoreLabel.setText("Scores " + (++scores));
@@ -391,7 +377,9 @@ public class PanelGame extends JPanel {
 					}
 			}
 		}
+
 		repaint();
+		
 		isDoing = false;
 	}
 
@@ -489,23 +477,105 @@ public class PanelGame extends JPanel {
 			y = random.nextInt(9);
 			c = random.nextInt(4) + 1;
 
+			while (cell[x][y] != Color.nullo.getVal() || stars.contains(new Star(y,x,c))) {
+				x = random.nextInt(9);
+				y = random.nextInt(9);
+			}
+
+			stars.add(new Star(y, x, c));
+			jcell[x][y].setIcon(factory.getStar(c));
+		}
+	}
+
+	private void initUI() {
+		griglia = new JPanel();
+		griglia.setPreferredSize(new Dimension(500, 500));
+		griglia.setLayout(new GridBagLayout());
+		GridBagConstraints g = new GridBagConstraints();
+
+		cell = new int[9][9];
+		jcell = new JLabel[9][9];
+
+		for (int i = 0; i < 9; ++i)
+			for (int j = 0; j < 9; ++j) {
+				cell[i][j] = 0;
+				g.gridx = i;
+				g.gridy = j;
+				griglia.add(new JLabel(j + "," + i), g);
+				griglia.add(jcell[i][j] = new JLabel(), g);
+				griglia.add(new JLabel(factory.getFloor()), g);
+			}
+
+		add(griglia, BorderLayout.NORTH);
+
+		JButton next = new JButton(factory.getNext());
+		next.setBorderPainted(false);
+		next.setContentAreaFilled(false);
+		next.setOpaque(true);
+
+		next.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					next();
+				} catch (Exception e1) {
+					e1.printStackTrace();
+				}
+			}
+		});
+
+		JButton pathButton = new JButton("Enable Path");
+		pathButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if(isDoing || fase)
+					return;
+				createPath = !createPath;
+				if (createPath)
+					((JButton) e.getSource()).setText("Disable Path");
+				else
+					((JButton) e.getSource()).setText("Enable Path");
+			}
+		});
+
+		scoreLabel = new JLabel("Scores 0");
+
+		add(scoreLabel, BorderLayout.CENTER);
+		add(next, BorderLayout.CENTER);
+		add(pathButton, BorderLayout.CENTER);
+	}
+
+	private void reset() {
+
+		for (int i = 0; i < cell.length; i++)
+			for (int j = 0; j < cell.length; j++) {
+				cell[i][j] = 0;
+				jcell[i][j].setIcon(null);
+			}
+
+		random = new Random();
+
+		for (int init = 0, x, y, c; init < 5; init++) { // piazzo le prime 5 palline
+			x = random.nextInt(9);
+			y = random.nextInt(9);
+			c = random.nextInt(4) + 1;
+
 			while (cell[x][y] != Color.nullo.getVal()) {
 				x = random.nextInt(9);
 				y = random.nextInt(9);
 			}
 
-			cell[x][y] = c + 10;
-			jcell[x][y].setIcon(factory.getStar(c));
-			stars.add(new Star(y, x, c));
+			setCell(x, y, c);
 		}
+
+		stars = new LinkedList<>();		
+		chooseWhereSpawnBalls(); // scelgo dove spawneranno le prossime 3 palline
+
+		fase = false;
 	}
 
-	@SuppressWarnings("unused")
-	private void PrintMatrix(char[][] c) {
-		for (int j = 0; j < c[0].length; j++) {
-			for (int i = 0; i < c.length; i++)
-				System.out.print(c[i][j] + " ");
-			System.out.println();
-		}
+	private void setCell(int x, int y, int c) {
+		cell[x][y] = c;
+		jcell[x][y].setIcon(factory.getBall(c));
 	}
 }

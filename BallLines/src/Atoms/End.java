@@ -10,14 +10,14 @@ public class End {
 	private int x;
 	@Param(1)
 	private int y;
-	
+
 	public End() {
-		x=y=0;
+		x = y = 0;
 	}
-	
+
 	public End(int xx, int yy) {
-		x=xx;
-		y=yy;
+		x = xx;
+		y = yy;
 	}
 
 	public int getX() {
@@ -35,9 +35,9 @@ public class End {
 	public void setY(int y) {
 		this.y = y;
 	}
-	
+
 	@Override
 	public String toString() {
-		return "end("+x+","+y+").";
+		return "end(" + x + "," + y + ").";
 	}
 }

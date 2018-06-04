@@ -1,0 +1,130 @@
+
+%--------------FASE PRELIMINARE---------------
+
+% adj dice se una cella è adiacente ad un'altra senza tenere conto delle palline
+% PS si dovrebbe calcolare una volta sola e poi passarli come fatti 
+adj(R, C, R1, C, v) :- cell(R, C, _), cell(R1, C, _), R1 = R+1.
+adj(R, C, R, C1, o) :- cell(R, C, _), cell(R, C1, _), C1 = C+1.
+adj(R, C, R1, C1, D) :- adj(R1, C1, R, C, D).
+
+adjDP(R, C, R1, C1) :- cell(R, C, _), cell(R1, C1, _), R1=R+1, C1=C+1.
+adjDS(R, C, R1, C1) :- cell(R, C, _), cell(R1, C1, _), R1=R+1, C1=C-1.
+
+adjAllDir(R, C, R1, C1, D) :- adj(R, C, R1, C1, D).
+adjAllDir(R, C, R1, C1, dp) :- adjDP(R, C, R1, C1).
+adjAllDir(R, C, R1, C1, dp) :- adjDP(R1, C1, R, C).
+adjAllDir(R, C, R1, C1, ds) :- adjDS(R, C, R1, C1).
+adjAllDir(R, C, R1, C1, ds) :- adjDS(R1, C1, R, C).
+
+celleUguali(R, C, R, C) :- cell(R, C, _).
+
+% con ball indico la cella in cui c'è una pallina
+ball(R, C, V) :- cell(R, C, V), V<>0.
+
+% con empty indico le celle vuote
+empty(R, C) :- cell(R, C, 0).
+
+% reachable dice se una cella VUOTA può raggiungere un'altra cella VUOTA (anche se stessa)
+reachable(R, C, R, C) :- empty(R, C).
+reachable(R, C, R1, C1) :- adj(R, C, R1, C1, _), empty(R, C), empty(R1, C1).
+reachable(R, C, R1, C1) :- reachable(R, C, R2, C2), adj(R2, C2, R1, C1, _), empty(R1, C1). 
+
+
+% acceptable dice se una cella può andare bene per formare un fila
+color(1..4).
+starr(R,C) :- star(R,C,_).
+acceptable(R, C, V) :- ball(R, C, V).
+acceptable(R, C, V) :- star(R, C, V).
+acceptable(R, C, V) :- empty(R, C), not starr(R, C), color(V).
+
+%-----------------TROVO LE FILE DA SOLO 2 PALLINE-----------------
+
+filaDue(R1, C1, R2, C2, V, D) :- ball(R1, C1, V), ball(R2, C2, V), adj(R1, C1, R2, C2, D), C2>=C1, R2>=R1,
+	not faParteDiTre(R2, C2), not faParteDiQuattro(R2, C2).
+
+filaDue(R1, C1, R2, C2, V, dp) :- ball(R1, C1, V), ball(R2, C2, V), adjDP(R1, C1, R2, C2), 
+	not faParteDiTre(R2, C2), not faParteDiQuattro(R2, C2).
+
+filaDue(R1, C1, R2, C2, V, ds) :- ball(R1, C1, V), ball(R2, C2, V), adjDS(R1, C1, R2, C2), 
+	not faParteDiTre(R2, C2), not faParteDiQuattro(R2, C2).
+
+faParteDiDue(R, C) :- filaDue(R, C, R2, C2, V, _).
+faParteDiDue(R, C) :- filaDue(R1, C1, R, C, V, _).
+
+faParteStessaFila(R, C, R1, C1, D) :- filaDue(R, C, R1, C1, _, D).
+
+%-----------------TROVO LE FILE DA SOLO 3 PALLINE-----------------
+
+filaTre(R1, C1, R2, C2, R3, C3, V, D) :- ball(R1, C1, V), ball(R2, C2, V), ball(R3, C3, V), adj(R, C1, R, C2, D), adj(R, C2, R, C3, D), 
+	C3>=C2, C2>=C1, R3>=R2, R2>R1, not faParteDiQuattro(R2, C2).
+
+filaTre(R1, C1, R2, C2, R3, C3, V, dp) :- ball(R1, C1, V), ball(R2, C2, V), ball(R3, C3, V), adjDP(R1,C1,R2,C2), 
+	adjDP(R2,C2,R3,C3), not faParteDiQuattro(R2, C2).
+
+filaTre(R1, C1, R2, C2, R3, C3, V, ds) :- ball(R1, C1, V), ball(R2, C2, V), ball(R3, C3, V), adjDS(R1,C1,R2,C2), 
+	adjDS(R2,C2,R3,C3), not faParteDiQuattro(R2, C2).
+
+faParteDiTre(R, C) :- filaTre(R, C, R2, C2, R3, C3, _, _).
+faParteDiTre(R, C) :- filaTre(R1, C1, R, C, R3, C3, _, _).
+faParteDiTre(R, C) :- filaTre(R1, C1, R2, C2, R, C, _, _).
+
+faParteStessaFila(R, C, R1, C1, D) :- filaTre(R, C, R1, C1, _, _, _, D).
+faParteStessaFila(R, C, R1, C1, D) :- filaTre(_, _, R, C, R1, C1, _, D).
+faParteStessaFila(R, C, R1, C1, D) :- filaTre(R, C, _, _, R1, C1, _, D).
+
+%-----------------TROVO LE FILE DA SOLO 4 PALLINE-----------------
+
+filaQuattro(R1, C1, R2, C2, R3, C3, R4, C4, V, D) :- ball(R1, C1, V), ball(R2, C2, V), ball(R3, C3, V), ball(R4, C4, V), 
+	adj(R1, C1, R2, C2, D), adj(R2, C2, R3, C3, D), adj(R3, C3, R4, C4, D), C4>=C3, C3>=C2, C2>=C1, R4>=R3, R3>=R2, R2>=R1.
+
+filaQuattro(R1, C1, R2, C2, R3, C3, R4, C4, V, dp) :- ball(R1, C1, V), ball(R2, C2, V), ball(R3, C3, V), ball(R4, C4, V), 
+	adjDP(R1,C1,R2,C2), adjDP(R2,C2,R3,C3), adjDP(R3,C3,R4,C4).
+
+filaQuattro(R1, C1, R2, C2, R3, C3, R4, C4, V, ds) :- ball(R1, C1, V), ball(R2, C2, V), ball(R3, C3, V), ball(R4, C4, V), 
+	adjDS(R1,C1,R2,C2), adjDS(R2,C2,R3,C3), adjDS(R3,C3,R4,C4).
+
+faParteDiQuattro(R, C) :- filaQuattro(R, C, R2, C2, R3, C3, R4, C4, _, _).
+faParteDiQuattro(R, C) :- filaQuattro(R1, C1, R, C, R3, C3, R4, C4, _, _).
+faParteDiQuattro(R, C) :- filaQuattro(R1, C1, R2, C2, R, C, R4, C4, _, _).
+faParteDiQuattro(R, C) :- filaQuattro(R1, C1, R2, C2, R3, C3, R, C, _, _).
+
+faParteStessaFila(R, C, R1, C1, D) :- filaQuattro(R, C, R1, C1, _, _, _, _, _, D).
+faParteStessaFila(R, C, R1, C1, D) :- filaQuattro(R, C, _, _, R1, C1, _, _, _, D).
+faParteStessaFila(R, C, R1, C1, D) :- filaQuattro(R, C, _, _, _, _, R1, C1, _, D).
+faParteStessaFila(R, C, R1, C1, D) :- filaQuattro(_, _, R, C, R1, C1, _, _, _, D).
+faParteStessaFila(R, C, R1, C1, D) :- filaQuattro(_, _, R, C, _, _, R1, C1, _, D).
+faParteStessaFila(R, C, R1, C1, D) :- filaQuattro(_, _, _, _, R, C, R1, C1, _, D).
+
+faParteStessaFila(R, C, R1, C1, D) :- faParteStessaFila(R1, C1, R, C, D).
+
+%-------------------GUESS------------------
+
+% move sposta una ball in una cella vuota accessibile vicina ad un'altra ball
+
+move(R, C, R1, C1, V, D) | notMove(R, C, R1, C1, V, D) :- ball(R, C, V), ball(R2, C2, V), not celleUguali(R,C,R2,C2), 
+	not faParteStessaFila(R,C,R2,C2, D), adjAllDir(R2,C2,R1,C1,D), empty(R1, C1), empty(RP,CP), adj(R,C,RP,CP,_), reachable(RP,CP,R1,C1).
+
+% ho un solo move per AS
+:- #count{R, C, R1, C1, V, D: move(R, C, R1, C1, V, D)}<>1.
+
+%---------------WEAK COSTRAINTS
+
+% preferisco formare le file più grandi possibili
+:~ lineCreated(X), Z=10-X. [Z@6] 
+
+% se smonto un'altra fila pago
+:~ move(R, C, R1, C1, V, D), faParteDiDue(R, C). [1@2]
+:~ move(R, C, R1, C1, V, D), faParteDiTre(R, C). [1@3]
+:~ move(R, C, R1, C1, V, D), faParteDiQuattro(R, C). [1@4]
+
+% se copro una stella pago
+:~ move(R, C, R1, C1, V, D), star(R1, C1, V). [5@5]
+:~ move(R, C, R1, C1, V, D), star(R1, C1, V1), V<>V1. [1@5]
+
+
+%------------------------------------
+
+isFull(R,C,V):-acceptable(R,C,V), not empty(R,C).
+countingNewLine(R1,C1,V,D) :- move(R,C,R1,C1,V,D).
+countingNewLine(R2,C2,V,D) :- countingNewLine(R1,C1,V,D), adjAllDir(R1,C1,R2,C2,D), isFull(R2,C2,V), not countingNewLine(R2,C2,D).
+lineCreated(X) :- X=#count{R,C,V,D: countingNewLine(R,C,V,D)}.

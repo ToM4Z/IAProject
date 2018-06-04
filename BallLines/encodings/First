@@ -1,0 +1,18 @@
+% adj dice se una cella è adiacente ad un'altra senza tenere conto delle palline
+% adjHalfDir lo calcola solo per un verso
+% adjAllDir è in tutte le direzioni e in tutti i versi
+% PS si dovrebbe calcolare una volta sola e poi passarli come fatti 
+
+riga(0..8).
+colonna(0..8).
+
+adjHalfDir(R, C, R1, C, v) :- riga(R), riga(R1), colonna(C), R1 = R+1.
+adjHalfDir(R, C, R, C1, o) :- riga(R), colonna(C), colonna(C1), C1 = C+1.
+adjHalfDir(R, C, R1, C1, dp) :- riga(R), riga(R1), colonna(C), colonna(C1), R1=R+1, C1=C+1.
+adjHalfDir(R, C, R1, C1, ds) :- riga(R), riga(R1), colonna(C), colonna(C1), R1=R+1, C1=C-1.
+
+adjAllDir(R, C, R1, C1, D) :- adjHalfDir(R, C, R1, C1, D).
+adjAllDir(R, C, R1, C1, D) :- adjAllDir(R1, C1, R, C, D).
+
+celleUguali(R, C, R, C) :- riga(R), colonna(C).
+

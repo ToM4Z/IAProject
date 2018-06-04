@@ -12,15 +12,15 @@ public class Star {
 	private int y;
 	@Param(2)
 	private int v;
-	
+
 	public Star() {
-		x=y=v=0;
+		x = y = v = 0;
 	}
-	
-	public Star(int xx,int yy, int vv) {
-		x=xx;
-		y=yy;
-		v=vv;
+
+	public Star(int xx, int yy, int vv) {
+		x = xx;
+		y = yy;
+		v = vv;
 	}
 
 	public int getX() {
@@ -46,6 +46,18 @@ public class Star {
 	public void setV(int v) {
 		this.v = v;
 	}
-	
-	
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof Star) {
+			Star st = (Star) obj;
+			return st.x == x && st.y == y;
+		}
+		return false;
+	}
+
+	@Override
+	public String toString() {
+		return "star(" + x + "," + y + "," + v + ").";
+	}
 }
