@@ -52,6 +52,11 @@ faParteStessaFila(R, C, R1, C1, D) :- faParteStessaFila(R1, C1, R, C, D).
 
 move(R, C, R1, C1, V, D) | notMove(R, C, R1, C1, V, D) :- ball(R, C, V), isFull(R2, C2, V), not celleUguali(R,C,R2,C2), adjAllDir(R2,C2,R1,C1,D), empty(R1, C1), empty(RP,CP), adjAllDir(R,C,RP,CP,Dir), pathDir(Dir), not faParteStessaFila(R,C,R2,C2,D).
 
+move(r,c,r1,c1) | no  :- reachable(r,c,r1,c1)
+:- 
+:-
+:- 
+
 %------------------------------COSTRAINTS
 
 % ho un solo move per AS
