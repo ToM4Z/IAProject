@@ -1,0 +1,122 @@
+
+
+pathDir("v"). 
+pathDir("o").
+
+% acceptable dice se una cella può andare bene per formare un fila
+color(1..4).
+starr(R,C) :- star(R,C,_).
+acceptable(R, C, V) :- isFull(R,C,V).
+acceptable(R, C, V) :- empty(R, C), not starr(R, C), color(V).
+
+%------------TROVO LE FILE
+
+isFull(R,C,V):-ball(R,C,V).
+isFull(R,C,V):-star(R,C,V).
+
+filaQuattro(R1, C1, R2, C2, R3, C3, R4, C4, V, D) :- isFull(R1, C1, V), isFull(R2, C2, V), isFull(R3, C3, V), isFull(R4, C4, V), 
+	adjHalfDir(R1, C1, R2, C2, D), adjHalfDir(R2, C2, R3, C3, D), adjHalfDir(R3, C3, R4, C4, D).
+
+filaTre(R1, C1, R2, C2, R3, C3, V, D) :- isFull(R1, C1, V), isFull(R2, C2, V), isFull(R3, C3, V), adjHalfDir(R1, C1, R2, C2, D), adjHalfDir(R2, C2, R3, C3, D), not faParteDi(R2, C2, 4).
+
+filaDue(R1, C1, R2, C2, V, D) :- isFull(R1, C1, V), isFull(R2, C2, V), adjHalfDir(R1, C1, R2, C2, D), not faParteDi(R2, C2, 3), not faParteDi(R2, C2, 4).
+
+faParteDi(R, C, 4) :- filaQuattro(R, C, R2, C2, R3, C3, R4, C4, _, _).
+faParteDi(R, C, 4) :- filaQuattro(R1, C1, R, C, R3, C3, R4, C4, _, _).
+faParteDi(R, C, 4) :- filaQuattro(R1, C1, R2, C2, R, C, R4, C4, _, _).
+faParteDi(R, C, 4) :- filaQuattro(R1, C1, R2, C2, R3, C3, R, C, _, _).
+faParteDi(R, C, 3) :- filaTre(R, C, R2, C2, R3, C3, _, _).
+faParteDi(R, C, 3) :- filaTre(R1, C1, R, C, R3, C3, _, _).
+faParteDi(R, C, 3) :- filaTre(R1, C1, R2, C2, R, C, _, _).
+faParteDi(R, C, 2) :- filaDue(R, C, R2, C2, _, _).
+faParteDi(R, C, 2) :- filaDue(R1, C1, R, C, _, _).
+
+fila(2..4).
+faParteDi(R,C) :- faParteDi(R,C,_).
+nonFaParteDiFile(R,C) :- ball(R,C,_), not faParteDi(R,C).
+
+needTo(R,C,V,3) :- filaTre(R1,C1,R2,C2,R3,C3,V,D), adjAllDir(R1,C1,R,C,D), not celleUguali(R2,C2,R,C).
+needTo(R,C,V,3) :- filaTre(R1,C1,R2,C2,R3,C3,V,D), adjAllDir(R3,C3,R,C,D), not celleUguali(R2,C2,R,C).
+needTo(R,C,V,3) :- needTo(R1,C1,V,3), filaTre(R2,C2,_,_,_,_,V,D), adjAllDir(R1,C1,R2,C2,D), adjAllDir(R,C,R1,C1,D), not celleUguali(R2,C2,R,C).
+needTo(R,C,V,3) :- needTo(R1,C1,V,3), filaTre(_,_,_,_,R2,C2,V,D), adjAllDir(R1,C1,R2,C2,D), adjAllDir(R,C,R1,C1,D), not celleUguali(R2,C2,R,C).
+needTo(R,C,V,4) :- filaQuattro(R1,C1,R2,C2,R3,C3,R4,C4,V,D), adjAllDir(R1,C1,R,C,D), not celleUguali(R2,C2,R,C).
+needTo(R,C,V,4) :- filaQuattro(R1,C1,R2,C2,R3,C3,R4,C4,V,D), adjAllDir(R4,C4,R,C,D), not celleUguali(R3,C3,R,C).
+
+faParteStessaFila(R, C, R1, C1, D) :- filaQuattro(R, C, R1, C1, _, _, _, _, _, D).
+faParteStessaFila(R, C, R1, C1, D) :- filaQuattro(R, C, _, _, R1, C1, _, _, _, D).
+faParteStessaFila(R, C, R1, C1, D) :- filaQuattro(R, C, _, _, _, _, R1, C1, _, D).
+faParteStessaFila(R, C, R1, C1, D) :- filaQuattro(_, _, R, C, R1, C1, _, _, _, D).
+faParteStessaFila(R, C, R1, C1, D) :- filaQuattro(_, _, R, C, _, _, R1, C1, _, D).
+faParteStessaFila(R, C, R1, C1, D) :- filaQuattro(_, _, _, _, R, C, R1, C1, _, D).
+faParteStessaFila(R, C, R1, C1, D) :- filaTre(R, C, R1, C1, _, _, _, D).
+faParteStessaFila(R, C, R1, C1, D) :- filaTre(_, _, R, C, R1, C1, _, D).
+faParteStessaFila(R, C, R1, C1, D) :- filaTre(R, C, _, _, R1, C1, _, D).
+faParteStessaFila(R, C, R1, C1, D) :- filaDue(R, C, R1, C1, _, D).
+faParteStessaFila(R, C, R1, C1, D) :- faParteStessaFila(R1, C1, R, C, D).
+
+%--------------------------------------GUESS
+
+direction("v").
+direction("o").
+direction("dp").
+direction("ds").
+
+choosedDirection(D) | notChoosedDirection(D) :- direction(D).
+:- #count{D: choosedDirection(D)}<>1.
+
+choosedColor(C) | notChoosedColor(C) :- color(C).
+:- #count{C: choosedColor(C)}<>1.
+
+
+move(R, C, R1, C1) | notMove(R, C, R1, C1) :- choosedColor(V), choosedDirection(D), ball(R, C, V), isFull(R2, C2, V), not celleUguali(R,C,R2,C2), adjAllDir(R2,C2,R1,C1,D), empty(R1, C1), not faParteStessaFila(R,C,R2,C2,D).
+
+:- #count{R, C, R1, C1: move(R, C, R1, C1)}<>1.
+
+start(R,C) :- move(R,C,_,_).
+end(R,C) :- move(_,_,R,C).
+
+%------------------------------COSTRAINTS
+
+%----------------rechable dice se la pallina da spostare raggiunge la sua destinazione
+reachable(R, C, R, C) :- start(RS,CS), pathDir(D), adjAllDir(RS,CS,R,C,D), empty(R, C).
+reachable(R, C, R1, C1) :- start(RS,CS), pathDir(D), adjAllDir(RS,CS,R,C,D), empty(R, C), adjAllDir(R, C, R1, C1, D1), empty(R1, C1), pathDir(D1).
+reachable(R, C, R1, C1) :- reachable(R, C, R2, C2), adjAllDir(R2, C2, R1, C1, D), empty(R1, C1), pathDir(D). 
+
+% RSE = riga start empty 
+isReachable(RSE,CSE) :- move(RS,CS,RD,CD), adjAllDir(RS,CS,RSE,CSE,D), empty(RSE,CSE), pathDir(D), reachable(RSE,CSE,RD,CD). 
+isReachable :- isReachable(_,_).
+:- not isReachable.
+
+
+%---------------controllo che ci siano 5 spazi
+:- needSpace(X), X<5.
+
+countingNeedSpace(R,C) :- end(R,C).
+countingNeedSpace(R2,C2) :- countingNeedSpace(R1,C1), adjAllDir(R1,C1,R2,C2,D), acceptable(R2,C2,V), choosedColor(V), choosedDirection(D).
+needSpace(X) :- X=#count{R,C: countingNeedSpace(R,C)}.
+
+%-----------------preferisco creare file più grandi possibili
+:~ lineCreated(2). [9@3]
+:~ lineCreated(3). [8@3]
+:~ lineCreated(4). [7@3]
+:~ lineCreated(5). [6@3]
+:~ lineCreated(6). [5@3]
+:~ lineCreated(7). [4@3]
+:~ lineCreated(8). [3@3]
+:~ lineCreated(9). [2@3]
+
+countingNewLine(R,C) :- end(R,C).
+countingNewLine(R2,C2) :- choosedColor(V), choosedDirection(D), countingNewLine(R1,C1), adjAllDir(R1,C1,R2,C2,D), isFull(R2,C2,V), start(R,C), not celleUguali(R,C,R2,C2).
+lineCreated(X) :- X=#count{R,C: countingNewLine(R,C)}.
+
+%----------------preferisco usare ball che non fanno parte di file
+%pagoBallNotIsolata :- start(R,C), not nonFaParteDiFile(R,C).
+%:~ pagoBallNotIsolata. [1@3]
+
+pago(X) :- start(R,C), faParteDi(R,C,X).
+:~ pago(X). [X@2]
+
+
+giveStart(R,C) :- start(R,C).
+giveEnd(R,C) :- end(R,C).
+

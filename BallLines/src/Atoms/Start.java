@@ -3,7 +3,7 @@ package Atoms;
 import it.unical.mat.embasp.languages.Id;
 import it.unical.mat.embasp.languages.Param;
 
-@Id("start")
+@Id("giveStart")
 public class Start {
 
 	@Param(0)

@@ -18,4 +18,6 @@ public final class Settings {
 
 	public final static String Selected = ImagesDirectory + "selected.png";
 
+	public final static String Loading = ImagesDirectory + "loading.gif";
+
 }

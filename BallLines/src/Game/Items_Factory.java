@@ -14,7 +14,7 @@ public class Items_Factory {
 		return instance;
 	}
 
-	private ImageIcon floor, next, here, selected;
+	private ImageIcon floor, next, here, selected, loading;
 	private ImageIcon reb_ball, red_star;
 	private ImageIcon yellow_ball, yellow_star;
 	private ImageIcon blue_ball, blue_star;
@@ -30,6 +30,7 @@ public class Items_Factory {
 		next = new ImageIcon(tool.createImage(Settings.Next));
 		here = new ImageIcon(tool.createImage(Settings.Here));
 		selected = new ImageIcon(tool.createImage(Settings.Selected));
+		loading = new ImageIcon(tool.createImage(Settings.Loading));
 
 		reb_ball = new ImageIcon(tool.createImage(Settings.Balls + "red_ball.png"));
 		red_star = new ImageIcon(tool.createImage(Settings.Stars + "red_star.png"));
@@ -96,6 +97,10 @@ public class Items_Factory {
 
 	public ImageIcon getLow() {
 		return low;
+	}
+
+	public ImageIcon getLoading() {
+		return loading;
 	}
 
 	public ImageIcon getHigh() {

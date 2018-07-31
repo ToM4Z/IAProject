@@ -9,6 +9,7 @@ public class Launcher extends JFrame{
 
 	public Launcher() {
 		setPreferredSize(new Dimension(500,600));
+		setSize(500,600);
 		setLocation(400,100);
 		setResizable(false);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

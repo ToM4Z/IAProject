@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
@@ -23,7 +24,6 @@ import Atoms.CelleUguali;
 import Atoms.Empty;
 import Atoms.End;
 import Atoms.Path;
-import Atoms.Move;
 import Atoms.Star;
 import Atoms.Start;
 import Atoms.Used;
@@ -41,8 +41,9 @@ public class PanelGame extends JPanel {
 	private static final long serialVersionUID = 1L;
 
 	private final InputProgram facts;
+	private static Handler handlerAI, handlerPath;
 
-	private JPanel griglia;
+	private JPanel griglia, manager, loadingPanel;
 	private int[][] cell; // [colonna][riga]
 	private JLabel[][] jcell;
 	private Items_Factory factory;
@@ -50,14 +51,11 @@ public class PanelGame extends JPanel {
 	private boolean fase;
 	private List<Path> path;
 	private List<Star> stars;
-	private Move move = null;
 	private Start start = null;
 	private End end = null;
 	private JLabel scoreLabel;
 	private int scores = 0;
-	private boolean isDoing = false, createPath = false;
-
-	private static Handler handlerAI, handlerPath;
+	private boolean createPath = false, viewGrid = false;
 
 	public PanelGame() {
 		factory = Items_Factory.getInstance();
@@ -88,13 +86,16 @@ public class PanelGame extends JPanel {
 					if (a.getR1() == 10)
 						continue;
 					facts.addObjectInput(a);
+//					System.out.println(a);
 				} else if (obj instanceof adjHalfDir) {
 					adjHalfDir a = (adjHalfDir) obj;
 					if (a.getR1() == 10)
 						continue;
 					facts.addObjectInput(a);
+//					System.out.println(a);
 				} else if (obj instanceof CelleUguali) {
 					facts.addObjectInput((CelleUguali) obj);
+//					System.out.println((CelleUguali) obj);
 				}
 		} catch (Exception e1) {
 			e1.printStackTrace();
@@ -102,285 +103,294 @@ public class PanelGame extends JPanel {
 
 		handlerAI.removeAll();
 		encoding.clearFilesPaths();
-		encoding.addFilesPath("encodings/prova");
+		encoding.addFilesPath("encodings/IA");
 		handlerAI.addProgram(encoding);
 		handlerAI.addProgram(facts);
 
 		handlerPath = new DesktopHandler(new DLV2DesktopService("lib/dlv2"));
 		encoding = new ASPInputProgram();
-		encoding.addFilesPath("encodings/path2");
+		encoding.addFilesPath("encodings/path");
 		handlerPath.addProgram(encoding);
 		handlerPath.addProgram(facts);
+
+		path = new LinkedList<>();
 	}
 
-	private void next() throws Exception {
-		if (isDoing)
-			return;
-		else
-			isDoing = true;
+	private void next() {
 
-		fase = !fase;
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					fase = !fase;
 
-		if (fase) {
-			System.out.println("Fase1");
-			// FASE 1
-			// calcolo dove spostare una pallina e
-			// disegno il path su schermo
+					switchScreen(true);
+					
+					if (fase) {
+						System.out.println("-----------Fase1-----------");
+						// FASE 1
+						// calcolo dove spostare una pallina e
+						// disegno il path su schermo
 
-			InputProgram factsAI = new ASPInputProgram();
-			InputProgram factsPath = new ASPInputProgram();
+						InputProgram factsAI = new ASPInputProgram();
+						InputProgram factsPath = new ASPInputProgram();
 
-			factsAI.addObjectInput(new Move(10, 10, 10, 10, 10, "s"));
+						factsAI.addObjectInput(new Start(10, 10));
+						factsAI.addObjectInput(new End(10, 10));
 
-			for (Star s : stars) {
-				System.out.println(s.toString());
-				factsAI.addObjectInput(s);
-			}
+						for (Star s : stars) {
+//						System.out.println(s.toString());
+							factsAI.addObjectInput(s);
+						}
 
-			for (int i = 0; i < cell.length; i++)
-				for (int j = 0; j < cell.length; j++) {
-					if (cell[i][j] != 0) {
-						Ball x = new Ball(j, i, cell[i][j]);
-						factsAI.addObjectInput(x);
-						System.out.println(x.toString());
-					} else {
-						Empty x = new Empty(j, i);
-						factsAI.addObjectInput(x);
-						factsPath.addObjectInput(x);
-						System.out.println(x.toString());
-					}
-				}
+						for (int i = 0; i < cell.length; i++)
+							for (int j = 0; j < cell.length; j++) {
+								if (cell[i][j] != 0) {
+									Ball x = new Ball(j, i, cell[i][j]);
+									factsAI.addObjectInput(x);
+//								System.out.println(x.toString());
+								} else {
+									Empty x = new Empty(j, i);
+									factsAI.addObjectInput(x);
+									factsPath.addObjectInput(x);
+//								System.out.println(x.toString());
+								}
+							}
 
-			handlerAI.addProgram(factsAI);
+						System.out.println(factsAI.getPrograms());
+						System.out.println(facts.getPrograms());
 
-			AnswerSets sets = (AnswerSets) handlerAI.startSync();
-			handlerAI.removeProgram(factsAI);
-			System.out.println(sets.getAnswerSetsString());
+						handlerAI.addProgram(factsAI);
+						AnswerSets sets = (AnswerSets) handlerAI.startSync();
+						handlerAI.removeProgram(factsAI);
+						System.out.println(sets.getAnswerSetsString());
+						System.out.println(sets.getErrors());
 
-			if (sets.getAnswersets().size() == 0) {
-				Object[] options = { "Yes", "No" };
-				int n = JOptionPane.showOptionDialog(this.getParent(),
-						"<html><body><div width='200px' align='center'>GAME OVER<br>" + "Scores : " + scores
-								+ "<br>Retry?</div></body></html>",
-						"BallLines", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
+						if (sets.getAnswersets().size() == 0) {
 
-				if (n == 1)
-					System.exit(0);
-				else
-					reset();
-				return;
-			}
+							if (resetOrCloseDialog() == 1)
+								System.exit(0);
+							else
+								reset();
+							return;
+						}
 
-			move = null;
+						start = null;
+						end = null;
 
-			for (Object obj : sets.getAnswersets().get(sets.getAnswersets().size() - 1).getAtoms()) {
+						for (Object obj : sets.getAnswersets().get(0).getAtoms()) {
 
-				if (obj instanceof Move) {
-					Move o = (Move) obj;
-					if (o.getX1() == 10)
-						continue;
-					move = o;
-					start = new Start(move.getX1(), move.getY1());
-					end = new End(move.getX2(), move.getY2());
+							if (obj instanceof Start) {
+								if (((Start) obj).getX() == 10)
+									continue;
 
-					System.out.println(move.toString());
-					System.out.println(start.toString());
-					System.out.println(end.toString());
-					break;
-				}
-			}
+								start = (Start) obj;
+								System.out.println(start.toString());
+							} else if (obj instanceof End) {
+								if (((End) obj).getX() == 10)
+									continue;
 
-			if (move == null) {
-				System.out.println("CRASH");
-				return;
-			}
+								end = (End) obj;
+								System.out.println(end.toString());
+							}
+						}
 
+						if (start == null) {
+							System.out.println("ERROR: The \"start\" atom is not found!");
+							return;
+						}
 
-			jcell[start.getY()][start.getX()].setIcon(
-					combineImages(factory.getBall(cell[start.getY()][start.getX()]), factory.getSelected()));
-			jcell[end.getY()][end.getX()].setIcon(factory.getHere());
-			
-			if (createPath) {
+						jcell[start.getY()][start.getX()].setIcon(combineImages(
+								factory.getBall(cell[start.getY()][start.getX()]), factory.getSelected()));
+						jcell[end.getY()][end.getX()].setIcon(factory.getHere());
 
-				factsPath.addObjectInput(start);
-				factsPath.addObjectInput(end);
-				factsPath.addObjectInput(new Used(10, 10));
-				handlerPath.addProgram(factsPath);
+						if (createPath) {
+							factsPath.addObjectInput(start);
+							factsPath.addObjectInput(end);
+							factsPath.addObjectInput(new Used(10, 10));
+							handlerPath.addProgram(factsPath);
 
-				sets = (AnswerSets) handlerPath.startSync();
-				handlerPath.removeProgram(factsPath);
-				System.out.println(sets.getAnswerSetsString());
+							sets = (AnswerSets) handlerPath.startSync();
+							handlerPath.removeProgram(factsPath);
+							System.out.println(sets.getAnswerSetsString());
 
-				if (sets.getAnswersets().size() == 0) {
-					System.out.println("ZEROPATH");
-					System.out.println(sets.getErrors());
-					return;
-				}
+							if (sets.getAnswersets().size() == 0) {
+								System.out.println("ERROR: DLV doesn't create path");
+								System.out.println(sets.getErrors());
+								return;
+							}
 
-				AnswerSet s = sets.getAnswersets().get(sets.getAnswersets().size() - 1);
-
-				List<Used> used = new LinkedList<>();
-				path = new LinkedList<>();
-
-				for (Object obj : s.getAtoms()) {
-					if (obj instanceof Used) {
-						Used o = (Used) obj;
-						if (o.getX() == 10)
-							continue;
-						used.add(o);
-						// System.out.println(o);
-					}
-				}
-
-				path.add(new Path(0, start.getX(), start.getY()));
-				used.remove(new Used(start.getX(), start.getY()));
-
-				for (int i = 1, x = start.getX(), y = start.getY(); x != end.getX() || y != end.getY(); ++i) {
-					boolean pass = false;
-
-					if (used.contains(new Used(x + 1, y))) {
-						++x;
-						pass = true;
-					} else if (used.contains(new Used(x - 1, y))) {
-						--x;
-						pass = true;
-					} else if (used.contains(new Used(x, y + 1))) {
-						++y;
-						pass = true;
-					} else if (used.contains(new Used(x, y - 1))) {
-						--y;
-						pass = true;
-					}
-					if (!pass) {
-
-						path.removeAll(path);
-						i = 0;
-						x = start.getX();
-						y = start.getY();
-
-						System.out.println("CRASH");
-						for (Used u : used)
-							System.out.println(u);
-						return;
-					}
-					path.add(new Path(i, x, y));
-					used.remove(new Used(x, y));
-				}
-
-				for (int i = 1; i < path.size() - 1; ++i) {
-					Path prec = path.get(i - 1);
-					Path now = path.get(i);
-					Path next = path.get(i + 1);
-
-					ImageIcon img = null;
-
-					if (now.getX() != prec.getX()) {
-
-						if (now.getX() == prec.getX() + 1) {
-							if (now.getY() != next.getY()) {
-								if (now.getY() == next.getY() + 1)
-									img = factory.getCurveUL();
-								else
-									img = factory.getCurveUR();
-							} else
-								img = factory.getHigh();
-
-						} else {
-							if (now.getY() != next.getY()) {
-								if (now.getY() == next.getY() + 1)
-									img = factory.getCurveDL();
-								else
-									img = factory.getCurveDR();
-							} else
-								img = factory.getHigh();
+							AnswerSet s = sets.getAnswersets().get(sets.getAnswersets().size() - 1);
+							System.out.println(s.getAnswerSet());
+							creaPath(s);
 						}
 
 					} else {
-						if (now.getY() == prec.getY() + 1) {
-							if (now.getX() != next.getX()) {
-								if (now.getX() == next.getX() + 1)
-									img = factory.getCurveUL();
-								else
-									img = factory.getCurveDL();
-							} else
-								img = factory.getLow();
+						System.out.println("Fase2");
+						// FASE 2
 
+						// la pallina viene spostata
+
+						// se ho fatto scoppiare un insieme di 5 palline, per questo turno, non verranno
+						// spawnate altre palline
+
+						// altrimenti spawno le palline e torno al rigo 64
+
+						if (!path.isEmpty()) {
+							for (Path p : path) {
+								jcell[p.getY()][p.getX()].setIcon(null);
+								for (Star s : stars)
+									if (s.getX() == p.getX() && s.getY() == p.getY())
+										jcell[s.getY()][s.getX()].setIcon(factory.getStar(s.getV()));
+							}
+							path.clear();
+						}else
+							path.clear();
+
+						cell[end.getY()][end.getX()] = cell[start.getY()][start.getX()];
+						cell[start.getY()][start.getX()] = 0;
+						jcell[end.getY()][end.getX()].setIcon(factory.getBall(cell[end.getY()][end.getX()]));
+						jcell[start.getY()][start.getX()].setIcon(null);
+
+						if (!FilaCompletata()) {
+							for (Star s : stars) {
+								if (end.getX() == s.getX() && end.getY() == s.getY())
+									continue;
+								setCell(s.getY(), s.getX(), s.getV());
+							}
+							stars.clear();
+
+							FilaCompletata();
+
+							chooseWhereSpawnBalls();
 						} else {
-							if (now.getX() != next.getX()) {
-								if (now.getX() + 1 == next.getX())
-									img = factory.getCurveDR();
-								else
-									img = factory.getCurveUR();
-							} else
-								img = factory.getLow();
+							scoreLabel.setText("Scores " + (++scores));
+
+							for (Star s : stars)
+								if (end.getX() == s.getX() && end.getY() == s.getY()) {
+									stars.remove(s);
+									break;
+								}
 						}
 					}
 
-					boolean find = false;
-					for (Star st : stars)
-						if (st.getX() == now.getX() && st.getY() == now.getY()) {
-							find = true;
-							jcell[now.getY()][now.getX()].setIcon(combineImages(factory.getStar(st.getV()), img));
-						}
-					if (!find)
-						jcell[now.getY()][now.getX()].setIcon(img);
-
+					switchScreen(false);
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
-				jcell[end.getY()][end.getX()].setIcon(factory.getHere());
 			}
-			
-		} else {
-			System.out.println("Fase2");
-			// FASE 2
+		}).start();
 
-			// la pallina viene spostata
+	}
 
-			// se ho fatto scoppiare un insieme di 5 palline, per questo turno, non verranno
-			// spawnate altre palline
+	private void creaPath(AnswerSet s) throws Exception {
+		List<Used> used = new LinkedList<>();
 
-			// altrimenti spawno le palline e torno al rigo 64
-			
-			if(createPath) {
-			
-				for (Path p : path) {
-					jcell[p.getY()][p.getX()].setIcon(null);
-					for (Star s : stars)
-						if (s.getX() == p.getX() && s.getY() == p.getY())
-							jcell[s.getY()][s.getX()].setIcon(factory.getStar(s.getV()));
-				}
-				path.clear();
-			}
-
-			cell[end.getY()][end.getX()] = cell[start.getY()][start.getX()];
-			cell[start.getY()][start.getX()] = 0;
-			jcell[end.getY()][end.getX()].setIcon(factory.getBall(cell[end.getY()][end.getX()]));
-			jcell[start.getY()][start.getX()].setIcon(null);
-
-			if (!FilaCompletata()) {
-				for (Star s : stars) {
-					if (end.getX() == s.getX() && end.getY() == s.getY())
-						continue;
-					setCell(s.getY(), s.getX(), s.getV());
-				}
-				stars.clear();
-
-				FilaCompletata();
-
-				chooseWhereSpawnBalls();
-			} else {
-				scoreLabel.setText("Scores " + (++scores));
-
-				for (Star s : stars)
-					if (end.getX() == s.getX() && end.getY() == s.getY()) {
-						stars.remove(s);
-						break;
-					}
+		for (Object obj : s.getAtoms()) {
+			if (obj instanceof Used) {
+				Used o = (Used) obj;
+				if (o.getX() == 10)
+					continue;
+				used.add(o);
+//				System.out.println(o);
 			}
 		}
 
-		repaint();
-		
-		isDoing = false;
+		path.add(new Path(0, start.getX(), start.getY()));
+		used.remove(new Used(start.getX(), start.getY()));
+
+		for (int i = 1, x = start.getX(), y = start.getY(); x != end.getX() || y != end.getY(); ++i) {
+			boolean pass = false;
+
+			if (used.contains(new Used(x + 1, y))) {
+				++x;
+				pass = true;
+			} else if (used.contains(new Used(x - 1, y))) {
+				--x;
+				pass = true;
+			} else if (used.contains(new Used(x, y + 1))) {
+				++y;
+				pass = true;
+			} else if (used.contains(new Used(x, y - 1))) {
+				--y;
+				pass = true;
+			}
+			if (!pass) {
+
+				path.removeAll(path);
+				i = 0;
+				x = start.getX();
+				y = start.getY();
+
+				System.out.println("ERROR: Can't create Path!");
+				for (Used u : used)
+					System.out.println(u);
+				return;
+			}
+			path.add(new Path(i, x, y));
+			used.remove(new Used(x, y));
+		}
+
+		for (int i = 1; i < path.size() - 1; ++i) {
+			Path prec = path.get(i - 1);
+			Path now = path.get(i);
+			Path next = path.get(i + 1);
+
+			ImageIcon img = null;
+
+			if (now.getX() != prec.getX()) {
+
+				if (now.getX() == prec.getX() + 1) {
+					if (now.getY() != next.getY()) {
+						if (now.getY() == next.getY() + 1)
+							img = factory.getCurveUL();
+						else
+							img = factory.getCurveUR();
+					} else
+						img = factory.getHigh();
+
+				} else {
+					if (now.getY() != next.getY()) {
+						if (now.getY() == next.getY() + 1)
+							img = factory.getCurveDL();
+						else
+							img = factory.getCurveDR();
+					} else
+						img = factory.getHigh();
+				}
+
+			} else {
+				if (now.getY() == prec.getY() + 1) {
+					if (now.getX() != next.getX()) {
+						if (now.getX() == next.getX() + 1)
+							img = factory.getCurveUL();
+						else
+							img = factory.getCurveDL();
+					} else
+						img = factory.getLow();
+
+				} else {
+					if (now.getX() != next.getX()) {
+						if (now.getX() + 1 == next.getX())
+							img = factory.getCurveDR();
+						else
+							img = factory.getCurveUR();
+					} else
+						img = factory.getLow();
+				}
+			}
+
+			boolean find = false;
+			for (Star st : stars)
+				if (st.getX() == now.getX() && st.getY() == now.getY()) {
+					find = true;
+					jcell[now.getY()][now.getX()].setIcon(combineImages(factory.getStar(st.getV()), img));
+				}
+			if (!find)
+				jcell[now.getY()][now.getX()].setIcon(img);
+
+		}
+		jcell[end.getY()][end.getX()].setIcon(factory.getHere());
 	}
 
 	private boolean FilaCompletata() {
@@ -477,7 +487,7 @@ public class PanelGame extends JPanel {
 			y = random.nextInt(9);
 			c = random.nextInt(4) + 1;
 
-			while (cell[x][y] != Color.nullo.getVal() || stars.contains(new Star(y,x,c))) {
+			while (cell[x][y] != Color.nullo.getVal() || stars.contains(new Star(y, x, c))) {
 				x = random.nextInt(9);
 				y = random.nextInt(9);
 			}
@@ -488,8 +498,9 @@ public class PanelGame extends JPanel {
 	}
 
 	private void initUI() {
+		
 		griglia = new JPanel();
-		griglia.setPreferredSize(new Dimension(500, 500));
+		griglia.setPreferredSize(new Dimension(500, 480));
 		griglia.setLayout(new GridBagLayout());
 		GridBagConstraints g = new GridBagConstraints();
 
@@ -501,12 +512,14 @@ public class PanelGame extends JPanel {
 				cell[i][j] = 0;
 				g.gridx = i;
 				g.gridy = j;
-				griglia.add(new JLabel(j + "," + i), g);
 				griglia.add(jcell[i][j] = new JLabel(), g);
 				griglia.add(new JLabel(factory.getFloor()), g);
 			}
 
 		add(griglia, BorderLayout.NORTH);
+
+		manager = new JPanel();
+		manager.setLayout(new BorderLayout());
 
 		JButton next = new JButton(factory.getNext());
 		next.setBorderPainted(false);
@@ -524,25 +537,62 @@ public class PanelGame extends JPanel {
 			}
 		});
 
-		JButton pathButton = new JButton("Enable Path");
+		JButton pathButton = new JButton("Path Off");
 		pathButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if(isDoing || fase)
-					return;
+//				if (fase)
+//					return;
 				createPath = !createPath;
 				if (createPath)
-					((JButton) e.getSource()).setText("Disable Path");
+					((JButton) e.getSource()).setText("Path On");
 				else
-					((JButton) e.getSource()).setText("Enable Path");
+					((JButton) e.getSource()).setText("Path Off");
+			}
+		});
+
+		JButton gridButton = new JButton("XY Off");
+		gridButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				viewGrid = !viewGrid;
+
+				if (viewGrid)
+					((JButton) e.getSource()).setText("XY On");
+				else
+					((JButton) e.getSource()).setText("XY Off");
+
+				griglia.removeAll();
+				for (int i = 0; i < 9; ++i)
+					for (int j = 0; j < 9; ++j) {
+						g.gridx = i;
+						g.gridy = j;
+						if (viewGrid)
+							griglia.add(new JLabel(j + "," + i), g);
+						griglia.add(jcell[i][j], g);
+						griglia.add(new JLabel(factory.getFloor()), g);
+					}
 			}
 		});
 
 		scoreLabel = new JLabel("Scores 0");
 
-		add(scoreLabel, BorderLayout.CENTER);
-		add(next, BorderLayout.CENTER);
-		add(pathButton, BorderLayout.CENTER);
+		loadingPanel = new JPanel();
+
+		JLabel loadingLabel = new JLabel(factory.getLoading());
+		loadingPanel.add(loadingLabel, BorderLayout.SOUTH);
+
+		JPanel dx = new JPanel();
+		dx.setLayout(new GridLayout(2, 1));
+		dx.add(pathButton);
+		dx.add(gridButton);
+
+		manager.add(scoreLabel, BorderLayout.WEST);
+		manager.add(next, BorderLayout.CENTER);
+		manager.add(dx, BorderLayout.EAST);		
+
+		add(manager, BorderLayout.SOUTH);
+
 	}
 
 	private void reset() {
@@ -568,10 +618,30 @@ public class PanelGame extends JPanel {
 			setCell(x, y, c);
 		}
 
-		stars = new LinkedList<>();		
+		stars = new LinkedList<>();
 		chooseWhereSpawnBalls(); // scelgo dove spawneranno le prossime 3 palline
 
 		fase = false;
+	}
+
+	private void switchScreen(boolean loading) {
+		if (loading) {
+			remove(manager);
+			add(loadingPanel, BorderLayout.SOUTH);
+		} else {
+			remove(loadingPanel);
+			add(manager, BorderLayout.SOUTH);
+		}
+		repaint();
+	}
+
+	private int resetOrCloseDialog() {
+		Object[] options = { "Yes", "No" };
+		return JOptionPane.showOptionDialog(this.getParent(),
+				"<html><body><div width='200px' align='center'>GAME OVER<br>" + "Scores : " + scores
+						+ "<br>Retry?</div></body></html>",
+				"BallLines", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
+
 	}
 
 	private void setCell(int x, int y, int c) {
